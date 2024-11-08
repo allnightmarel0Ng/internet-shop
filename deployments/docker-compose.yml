@@ -16,5 +16,34 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  init-postgres:
+    image: postgres:13-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: |
+      "
+      psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /migrations/init.sql
+      "
+    volumes:
+      - ../migrations:/migrations
+    
+  authorization:
+    build:
+      context: ..
+      dockerfile: deployments/python/Dockerfile
+      args:
+        PORT: ${AUTHORIZATION_WS_PORT}
+        NAME: authorization
+    ports:
+      - "${AUTHORIZATION_WS_PORT}:${AUTHORIZATION_WS_PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    
 volumes:
   internet-shop-data:

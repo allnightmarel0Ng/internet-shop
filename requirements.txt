@@ -1,0 +1,17 @@
+astroid==3.3.5
+autopep8==2.3.1
+dill==0.3.9
+greenlet==3.1.1
+isort==5.13.2
+mccabe==0.7.0
+platformdirs==4.3.6
+psycopg2-binary==2.9.10
+pycodestyle==2.12.1
+pyflakes==3.2.0
+PyJWT==2.9.0
+pylint==3.3.1
+python-dotenv==1.0.1
+SQLAlchemy==2.0.36
+tomlkit==0.13.2
+typing_extensions==4.12.2
+websockets==13.1
