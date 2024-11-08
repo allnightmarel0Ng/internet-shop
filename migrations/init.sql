@@ -1,4 +1,3 @@
--- Active: 1731075035366@@127.0.0.1@5433@shop@public
 DROP TABLE IF EXISTS public.shops;
 DROP TABLE IF EXISTS public.users;
 DROP TABLE IF EXISTS public.categories;
