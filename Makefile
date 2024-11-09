@@ -1,4 +1,4 @@
-.PHONY: all build run down
+.PHONY: all build run down lint
 
 all: build run
 
@@ -10,3 +10,6 @@ run:
 
 down:
 	docker compose --env-file .env -f deployments/docker-compose.yml down
+
+lint:
+	autopep8 --in-place -r .
