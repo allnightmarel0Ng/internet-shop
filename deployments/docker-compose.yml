@@ -27,7 +27,7 @@ services:
     entrypoint: [ "/bin/sh", "-c" ]
     command: |
       "
-      psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /migrations/init.sql
+      psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /migrations/ddl.sql
       "
     volumes:
       - ../migrations:/migrations
