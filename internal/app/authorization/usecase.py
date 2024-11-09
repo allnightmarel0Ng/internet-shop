@@ -19,10 +19,10 @@ class AuthorizationUseCase:
         entity = dict()
         if entity_type == "shop":
             entity = self.__repository.authorize_shop(
-                decoded_credentials[0], decoded_credentials[1]).to_dict()
+                decoded_credentials[0], decoded_credentials[1]).__dict__
         elif entity_type == "user":
             entity = self.__repository.authorize_user(
-                decoded_credentials[0], decoded_credentials[1]).to_dict()
+                decoded_credentials[0], decoded_credentials[1]).__dict__
 
         entity["type"] = entity_type
 
