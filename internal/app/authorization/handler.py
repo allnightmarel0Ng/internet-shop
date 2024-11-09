@@ -2,7 +2,7 @@ import websockets
 import json
 
 from internal.app.authorization.usecase import AuthorizationUseCase
-from internal.infrastructure.postgres.exceptions import NoResultFound, MultipleResultsFound
+from internal.infrastructure.postgres import NoResultFound, MultipleResultsFound
 
 
 class AuthorizationHandler:
@@ -18,10 +18,12 @@ class AuthorizationHandler:
                     "jwt": jwt
                 }
                 await websocket.send(json.dumps(payload))
-            except NoResultFound as e:
+            except NoResultFound:
                 await websocket.send(json.dumps({"code": 404, "error": "entity with such credentials wasn't found"}))
             except MultipleResultsFound:
                 await websocket.send(json.dumps({"code": 404, "error": "too many entities with such credentials"}))
+            except:
+                await websocket.send(json.dumps({"code": 500, "error": "internal server error"}))
 
     async def start(self, port: int):
         server = await websockets.serve(self.__handle, "localhost", port)

@@ -1,7 +1,5 @@
-from internal.domain.model.shop import Shop
-from internal.domain.model.user import User
-from internal.domain.repository.shop import ShopRepository
-from internal.domain.repository.user import UserRepository
+from internal.domain.model import Shop, User
+from internal.domain.repository import ShopRepository, UserRepository
 
 
 class AuthorizationRepository:

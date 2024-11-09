@@ -1,6 +1,15 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
-from internal.infrastructure.postgres.exceptions import NoResultFound, MultipleResultsFound
+
+
+class NoResultFound(Exception):
+    """Raised when a query returns no result."""
+    pass
+
+
+class MultipleResultsFound(Exception):
+    """Raised when a query returns more than one result."""
+    pass
 
 
 class Database:
