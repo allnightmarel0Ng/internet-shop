@@ -22,12 +22,12 @@ class Database:
 
     def query(self, sql: str, params: dict = None):
         query = text(sql)
-        result = self.__db.query(query, params)
+        result = self.__db.execute(query, params)
         return result.fetchall()
 
     def query_row(self, sql: str, params: dict = None):
         query = text(sql)
-        result = self.__db.query(query, params)
+        result = self.__db.execute(query, params)
 
         if len(result) == 0:
             raise NoResultFound("No result found for the query.")
@@ -35,11 +35,6 @@ class Database:
             raise MultipleResultsFound("Multiple result found for the query")
 
         return result[0]
-
-    def execute(self, sql: str, params: dict = None):
-        query = text(sql)
-        self.__db.execute(query, params)
-        self.__db.commit()
 
     def close(self):
         self.__db.close()

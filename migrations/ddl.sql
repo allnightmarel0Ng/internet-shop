@@ -9,7 +9,8 @@ CREATE TABLE public.shops (
     id SERIAL PRIMARY KEY NOT NULL,
     name VARCHAR(50) NOT NULL,
     login VARCHAR(30) NOT NULL,
-    password VARCHAR(30) NOT NULL
+    password VARCHAR(30) NOT NULL,
+    UNIQUE (login)
 );
 
 CREATE TABLE public.users (
@@ -17,7 +18,8 @@ CREATE TABLE public.users (
     name VARCHAR(50) NOT NULL,
     login VARCHAR (30) NOT NULL,
     password VARCHAR(30) NOT NULL,
-    balance MONEY NOT NULL
+    balance MONEY NOT NULL CHECK (balance > 0),
+    UNIQUE (login)
 );
 
 CREATE TABLE public.categories (
