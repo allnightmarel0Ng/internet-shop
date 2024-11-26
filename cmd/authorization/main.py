@@ -1,4 +1,5 @@
-import asyncio
+from fastapi import FastAPI
+import uvicorn
 
 from internal.config import load_config
 
@@ -9,6 +10,11 @@ from internal.app.authorization.repository import AuthorizationRepository
 from internal.app.authorization.usecase import AuthorizationUseCase
 from internal.app.authorization.handler import AuthorizationHandler
 
+app = FastAPI()
+@app.get('/')
+async def hello():
+    return 'pong'
+
 if __name__ == '__main__':
     config = load_config()
 
@@ -18,10 +24,12 @@ if __name__ == '__main__':
     shop_repository = ShopRepository(db)
     user_repository = UserRepository(db)
 
-    authorization_repository = AuthorizationRepository(
+    repository = AuthorizationRepository(
         shop_repository, user_repository)
-    authorization_use_case = AuthorizationUseCase(
-        authorization_repository, config.JWT_SECRET_KEY)
-    authorization_handler = AuthorizationHandler(authorization_use_case)
+    use_case = AuthorizationUseCase(
+        repository, config.JWT_SECRET_KEY)
+    handler = AuthorizationHandler(use_case)
+    
+    app.include_router(handler.router)
 
-    asyncio.run(authorization_handler.start(int(config.AUTHORIZATION_WS_PORT)))
+    uvicorn.run(app, port=int(config.AUTHORIZATION_PORT), host="0.0.0.0")

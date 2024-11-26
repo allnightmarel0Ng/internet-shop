@@ -2,12 +2,12 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
 
 
-class NoResultFound(Exception):
+class NoResultFound(BaseException):
     """Raised when a query returns no result."""
     pass
 
 
-class MultipleResultsFound(Exception):
+class MultipleResultsFound(BaseException):
     """Raised when a query returns more than one result."""
     pass
 
@@ -29,12 +29,15 @@ class Database:
         query = text(sql)
         result = self.__db.execute(query, params)
 
-        if len(result) == 0:
+        row = result.fetchone()
+        if row is None:
             raise NoResultFound("No result found for the query.")
-        if len(result) > 1:
-            raise MultipleResultsFound("Multiple result found for the query")
 
-        return result[0]
+        rows = result.fetchall()
+        if rows:
+            raise MultipleResultsFound("Multiple results found for the query")
+
+        return row
 
     def close(self):
         self.__db.close()

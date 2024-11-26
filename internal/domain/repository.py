@@ -6,9 +6,9 @@ class UserRepository:
     def __init__(self, db: Database):
         self.__db = db
         self.__AUTHORIZATION_SQL = """
-            SELECT name, login, balance 
+            SELECT id, password_hash
             FROM public.users 
-            WHERE login = :login AND password = :password;
+            WHERE login = :login;
             """
         self.__CHANGE_BALANCE_SQL = """
             UPDATE public.users
@@ -24,17 +24,18 @@ class UserRepository:
     def __map_to_user(query_result) -> User:
         return User(name=query_result[0], login=query_result[1], balance=query_result[2])
 
-    def authorize_user(self, login: str, password: str) -> User:
-        return self.__map_to_user(self.__db.query_row(
+    def authorize_user(self, login: str) -> tuple[int, str]:
+        result = self.__db.query_row(
             self.__AUTHORIZATION_SQL,
-            {"login": login, "password": password}
-        ))
+            {"login": login}
+        )
+        return (result[0], result[1])
 
     def change_balance(self, login: str, diff: int):
         self.__db.query(
             self.__CHANGE_BALANCE_SQL,
             {"login": login, "diff": diff})
-        
+
     def get_id_by_login(self, login: str) -> int:
         return self.__db.query_row(self.__GET_ID_BY_LOGIN, {"login": login})
 
@@ -43,19 +44,20 @@ class ShopRepository:
     def __init__(self, db: Database):
         self.__db = db
         self.__AUTHORIZATION_SQL = """
-            SELECT name, login 
-            FROM public.shops 
-            WHERE login = :login AND password = :password;
+            SELECT id, password_hash
+            FROM public.shops
+            WHERE login = :login;
             """
 
     def __map_to_shop(query_result) -> Shop:
         return Shop(name=query_result[0], login=query_result[1])
 
-    def authorize_shop(self, login: str, password: str) -> Shop:
-        return self.__map_to_shop(self.__db.query_row(
+    def authorize_shop(self, login: str) -> tuple[int, str]:
+        result = self.__db.query_row(
             self.__AUTHORIZATION_SQL,
-            {"login": login, "password": password}
-        ))
+            {"login": login}
+        )
+        return (result[0], result[1])
 
 
 class CategoryRepository:
@@ -105,12 +107,13 @@ class ProductRepository:
         return self.__map_to_product(self.__db.query_row(
             self.__GET_BY_ID_SQL, {"id": id}
         ))
-    
+
     def get_products_price_sum(self, ids: list[int]) -> int:
         values = ' (' + ', '.join(str(id) for id in ids) + ');'
         result = 0
-        query_result = self.__db.query(self.__GET_SUM_PRICE_BY_IDS_SQL + values)
-        
+        query_result = self.__db.query(
+            self.__GET_SUM_PRICE_BY_IDS_SQL + values)
+
         for row in query_result:
             result += row.price
 
@@ -198,21 +201,25 @@ class ShoppingCartRepository:
             DELETE FROM public.shopping_carts
             WHERE user_id = :user_id;
             """
-        
+
     def add_product_to_card(self, user_id: int, product_id: int):
-        self.__db.query(self.__ADD_PRODUCT_TO_CART_SQL, {"user_id": user_id, "product_id": product_id})
-    
+        self.__db.query(self.__ADD_PRODUCT_TO_CART_SQL, {
+                        "user_id": user_id, "product_id": product_id})
+
     def drop_product_from_users_cart(self, user_id: int, product_id: int):
-        self.__db.query(self.__DROP_PRODUCT_FROM_USERS_CART_SQL, {"user_id": user_id, "product_id": product_id})
-    
+        self.__db.query(self.__DROP_PRODUCT_FROM_USERS_CART_SQL, {
+                        "user_id": user_id, "product_id": product_id})
+
     def get_users_products(self, user_id: int) -> list[int]:
         result: list[int] = []
-        query_result = self.__db.query(self.__GET_USERS_PRODUCTS_SQL, {"user_id": user_id})
-        
+        query_result = self.__db.query(
+            self.__GET_USERS_PRODUCTS_SQL, {"user_id": user_id})
+
         for row in query_result:
             result.append(row.product_id)
-        
+
         return result
-    
+
     def drop_users_product_cart(self, user_id: int):
-        self.__db.query(self.__DROP_USERS_PRODUCT_CART_SQL, {"user_id": user_id})
+        self.__db.query(self.__DROP_USERS_PRODUCT_CART_SQL,
+                        {"user_id": user_id})

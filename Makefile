@@ -1,15 +1,25 @@
 .PHONY: all build run down lint
 
+PREFIX=docker compose --env-file .env -f deployments/docker-compose.yml
+
 all: build run
 
 build:
-	docker compose --env-file .env -f deployments/docker-compose.yml build
+	${PREFIX} build
 
 run:
-	docker compose --env-file .env -f deployments/docker-compose.yml up -d
+	${PREFIX} up -d
 
 down:
-	docker compose --env-file .env -f deployments/docker-compose.yml down
+	${PREFIX} down
+
+rebuild: down all
+
+logs:
+	${PREFIX} logs ${AT}
+
+ps:
+	${PREFIX} ps -a
 
 lint:
 	autopep8 --in-place -r .

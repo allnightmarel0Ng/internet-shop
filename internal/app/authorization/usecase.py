@@ -1,6 +1,6 @@
 import jwt
 import base64
-import json
+import bcrypt
 
 from internal.app.authorization.repository import AuthorizationRepository
 
@@ -10,20 +10,34 @@ class AuthorizationUseCase:
         self.__repository = repository
         self.__jwt_secret_key = jwt_secret_key
 
-    def authorize_entity(self, json_data: str) -> str:
-        data = json.loads(json_data)
-        decoded_credentials = base64.b64decode(
-            data["base64"]).decode().split(":")
-        entity_type = data["type"]
+    def authorize_entity(self, b64: str) -> str:
+        try:
+            decoded = base64.b64decode(b64, validate=True)
+            decoded = decoded.decode()
+        except:
+            raise ValueError('invalid base64 format')
 
-        entity = dict()
+        tokens = decoded.split(':')
+        if len(tokens) != 3:
+            raise ValueError('invalid base64 format')
+
+        entity_type = tokens[0]
+        login = tokens[1]
+        password = tokens[2]
+
         if entity_type == "shop":
-            entity = self.__repository.authorize_shop(
-                decoded_credentials[0], decoded_credentials[1]).__dict__
+            id, hash = self.__repository.authorize_shop(login)
         elif entity_type == "user":
-            entity = self.__repository.authorize_user(
-                decoded_credentials[0], decoded_credentials[1]).__dict__
+            id, hash = self.__repository.authorize_user(login)
+        else:
+            raise ValueError('invalid entity type')
 
-        entity["type"] = entity_type
+        if not bcrypt.checkpw(password.encode(), hash.encode()):
+            raise ValueError('password mismatch')
+
+        entity = {
+            'id': id,
+            'type': entity_type
+        }
 
         return jwt.encode(entity, self.__jwt_secret_key)

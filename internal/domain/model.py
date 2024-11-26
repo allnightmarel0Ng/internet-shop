@@ -1,23 +1,27 @@
 class Shop:
-    def __init__(self, name: str, login: str):
+    def __init__(self, id: int, name: str, login: str):
+        self.id = id
         self.name = name
         self.login = login
 
 
 class User:
-    def __init__(self, name: str, login: str, balance: float):
+    def __init__(self, id: int, name: str, login: str, balance: float):
+        self.id = id
         self.name = name
         self.login = login
         self.balance = balance
 
 
 class Category:
-    def __init__(self, name: str):
+    def __init__(self, id: int, name: str):
+        self.id = id
         self.name = name
 
 
 class Product:
-    def __init__(self, category: Category, shop: Shop, name: str, price: float, description: str):
+    def __init__(self, id: int, category: Category, shop: Shop, name: str, price: float, description: str):
+        self.id = id
         self.category = category
         self.shop = shop
         self.name = name

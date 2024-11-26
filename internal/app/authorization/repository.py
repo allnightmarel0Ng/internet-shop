@@ -7,8 +7,8 @@ class AuthorizationRepository:
         self.__shop_repository = shop_repository
         self.__user_repository = user_repository
 
-    def authorize_shop(self, login: str, password: str) -> Shop:
-        return self.__shop_repository.authorize_shop(login, password)
+    def authorize_shop(self, login: str) -> tuple[int, str]:
+        return self.__shop_repository.authorize_shop(login)
 
-    def authorize_user(self, login: str, password: str) -> User:
-        return self.__user_repository.authorize_user(login, password)
+    def authorize_user(self, login: str) -> tuple[int, str]:
+        return self.__user_repository.authorize_user(login)
