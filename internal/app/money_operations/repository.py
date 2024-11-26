@@ -9,8 +9,8 @@ class MoneyOperationsRepository:
         self.__shopping_cart_repository = shopping_cart_repository
         self.__product_repository = product_repository
 
-    def add_money_to_user(self, login: str, to_add: int):
-        self.__user_repository.change_balance(login, to_add)
+    def deposit(self, id: int, to_add: int):
+        self.__user_repository.change_balance(id, to_add)
 
     def buy_shopping_cart(self, user: User):
         # todo: transaction

@@ -12,6 +12,6 @@ class GatewayHandler:
     def login(self, authorization=Header(None)):
         code, data = self.__use_case.authentication(authorization)
         if code == status.HTTP_200_OK:
-            return {'code': code, 'jwt': data['jwt']}
+            return {'jwt': data['jwt']}
         else:
             raise HTTPException(status_code=code, detail=data['detail'])

@@ -3,41 +3,66 @@ import base64
 import bcrypt
 
 from internal.app.authorization.repository import AuthorizationRepository
+from fastapi import HTTPException, status
 
 
 class AuthorizationUseCase:
-    def __init__(self, repository: AuthorizationRepository, jwt_secret_key: str):
+    def __init__(self, repository: AuthorizationRepository, jwt_secret_key: str, session_time_in_secs: int):
         self.__repository = repository
         self.__jwt_secret_key = jwt_secret_key
+        self.__session_time_in_secs = session_time_in_secs
 
-    def authorize_entity(self, b64: str) -> str:
+    def authenticate_entity(self, b64: str) -> str:
         try:
             decoded = base64.b64decode(b64, validate=True)
             decoded = decoded.decode()
         except:
-            raise ValueError('invalid base64 format')
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='invalid base64 format')
 
         tokens = decoded.split(':')
         if len(tokens) != 3:
-            raise ValueError('invalid base64 format')
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='invalid base64 format')
 
         entity_type = tokens[0]
         login = tokens[1]
         password = tokens[2]
 
         if entity_type == "shop":
-            id, hash = self.__repository.authorize_shop(login)
+            id, hash = self.__repository.authenticate_shop(login)
         elif entity_type == "user":
-            id, hash = self.__repository.authorize_user(login)
+            id, hash = self.__repository.authenticate_user(login)
         else:
-            raise ValueError('invalid entity type')
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='invalid entity type')
 
         if not bcrypt.checkpw(password.encode(), hash.encode()):
-            raise ValueError('password mismatch')
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail='password mismatch')
 
         entity = {
             'id': id,
             'type': entity_type
         }
 
-        return jwt.encode(entity, self.__jwt_secret_key)
+        json_web_token = jwt.encode(entity, self.__jwt_secret_key)
+
+        if self.__repository.add_jwt_to_redis(json_web_token, self.__session_time_in_secs) is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unable to push jwt to redis')
+
+        return json_web_token
+
+    def authorize_entity(self, json_web_token: str) -> tuple[int, str]:
+        if self.__repository.check_jwt_in_redis(json_web_token) == False:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail='could not find jwt')
+
+        decoded = jwt.decode(json_web_token, key=self.__jwt_secret_key)
+        return (decoded['id'], decoded['type'])
+
+    def logout_entity(self, json_web_token: str):
+        if self.__repository.delete_jwt_from_redis(json_web_token) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail='could not find jwt')
