@@ -15,7 +15,7 @@ class AuthorizationHandler:
         self.router.add_api_route(
             "/logout", self.logout, methods=["POST"])
 
-    def authentication(self, authorization: str = Header(None)):
+    async def authentication(self, authorization: str = Header(None)):
         if not authorization and authorization.count('Basic ') < 1:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="authorization header missing or not Basic")
@@ -28,7 +28,7 @@ class AuthorizationHandler:
                 status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
         return {'jwt': jwt}
 
-    def authorization(self, authorization: str = Header(None)):
+    async def authorization(self, authorization: str = Header(None)):
         if not authorization and authorization.count('Bearer ') < 1:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="authorization header missing or not Bearer")
@@ -39,7 +39,7 @@ class AuthorizationHandler:
 
         return {'id': entity_id, 'type': entity_type}
 
-    def logout(self, authorization: str = Header(None)):
+    async def logout(self, authorization: str = Header(None)):
         if not authorization and authorization.count('Bearer ') < 1:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="authorization header missing or not Bearer")

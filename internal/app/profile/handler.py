@@ -10,8 +10,8 @@ class ProfileHandler:
         self.router.add_api_route("/shop/{shop_id}", self.shop_profile, methods=["GET"])
         self.router.add_api_route("/user/{user_id}", self.user_profile, methods=["GET"])
     
-    def shop_profile(self, shop_id):
+    async def shop_profile(self, shop_id):
         return self.__use_case.get_profile_json(ProfileType.SHOP, shop_id)
     
-    def user_profile(self, user_id):
+    async def user_profile(self, user_id):
         return self.__use_case.get_profile_json(ProfileType.USER, user_id)
