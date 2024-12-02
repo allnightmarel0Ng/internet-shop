@@ -20,4 +20,4 @@ EXPOSE ${PORT}
 
 ARG NAME
 COPY ./cmd/${NAME}/main.py ./main.py
-CMD ["python3", "./main.py"]
+CMD ["python3", "-u", "./main.py"]

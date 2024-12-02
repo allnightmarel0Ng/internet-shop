@@ -46,7 +46,7 @@ class AuthorizationUseCase:
             'type': entity_type
         }
 
-        json_web_token = jwt.encode(entity, self.__jwt_secret_key)
+        json_web_token = jwt.encode(entity, self.__jwt_secret_key, algorithm='HS256')
 
         if self.__repository.add_jwt_to_redis(json_web_token, self.__session_time_in_secs) is None:
             raise HTTPException(
@@ -59,7 +59,7 @@ class AuthorizationUseCase:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail='could not find jwt')
 
-        decoded = jwt.decode(json_web_token, key=self.__jwt_secret_key)
+        decoded = jwt.decode(json_web_token, key=self.__jwt_secret_key, algorithms=["HS256"])
         return (decoded['id'], decoded['type'])
 
     def logout_entity(self, json_web_token: str):

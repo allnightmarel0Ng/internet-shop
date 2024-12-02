@@ -1,4 +1,57 @@
 services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    hostname: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_PORT}
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "${ZOOKEEPER_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - ${KAFKA_PORT}:${KAFKA_PORT}
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:${ZOOKEEPER_PORT}'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:${KAFKA_PORT},PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "${KAFKA_PORT}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  init-kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka:29092 --list
+      
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic money_operations --replication-factor 1 --partitions 1
+      
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:29092 --list
+      "
+  
   postgres:
     build:
       context: ..
@@ -60,6 +113,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    init: true
   
   gateway:
     build:
@@ -71,7 +125,44 @@ services:
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     depends_on:
-      - authorization
+      kafka:
+        condition: service_healthy
+    environment:
+      - KAFKA_BROKER_SERV=kafka:${KAFKA_PORT}
+    init: true
+  
+  money_operations:
+    build:
+      context: ..
+      dockerfile: deployments/python/Dockerfile
+      args:
+        NAME: money_operations
+        PORT: ${MONEY_OPERATIONS_PORT}
+    ports:
+      - "${MONEY_OPERATIONS_PORT}:${MONEY_OPERATIONS_PORT}"
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy  
+    environment:
+      - KAFKA_BROKER_SERV=kafka:${KAFKA_PORT}
+    init: true
+
+  profile:
+    build:
+      context: ..
+      dockerfile: deployments/python/Dockerfile
+      args:
+        NAME: profile
+        PORT: ${PROFILE_PORT}
+    ports:
+      - "${PROFILE_PORT}:${PROFILE_PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    init: true
+
     
 volumes:
   internet-shop-data:

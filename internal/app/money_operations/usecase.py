@@ -1,14 +1,11 @@
 import jwt
 
-from internal.app.money_operations.repository import MoneyOperationsRepository
+from internal.app.money_operations.repository import *
 
 
 class MoneyOperationsUseCase:
-    def __init__(self, repository: MoneyOperationsRepository, jwt_secret_key: str):
+    def __init__(self, repository: MoneyOperationsRepository):
         self.__repository = repository
-        self.__JWT_SECRET_KEY = jwt_secret_key
 
-    def add_money_to_user(self, json_web_token: str, to_add: int):
-        decoded = jwt.decode(jwt=json_web_token, key=self.__JWT_SECRET_KEY, options={
-                             "verify_signature": False})
-        self.__repository.add_money_to_user(decoded['login'], to_add)
+    def add_money_to_user(self, user_id: int, to_add: int):
+        self.__repository.deposit(user_id, to_add)

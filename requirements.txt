@@ -36,7 +36,6 @@ pydantic_core==2.27.1
 pyflakes==3.2.0
 Pygments==2.18.0
 PyJWT==2.9.0
-pylint==3.3.1
 python-dotenv==1.0.1
 python-multipart==0.0.17
 PyYAML==6.0.2

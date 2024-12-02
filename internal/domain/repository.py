@@ -12,32 +12,39 @@ class UserRepository:
             """
         self.__CHANGE_BALANCE_SQL = """
             UPDATE public.users
-            SET balance = balance + (:diff)
-            WHERE login = :login;
+            SET balance = balance + :diff
+            WHERE id = :user_id;
             """
-        self.__GET_ID_BY_LOGIN = """
-            SELECT id
+        self.__GET_PROFILE_BY_ID_SQL = """
+            SELECT
+                id,
+                name,
+                login,
+                balance
             FROM public.users
-            WHERE login = :login
+            WHERE id = :id
             """
 
-    def __map_to_user(query_result) -> User:
-        return User(name=query_result[0], login=query_result[1], balance=query_result[2])
+    def __map_to_user(self, query_result) -> User:
+        return User(id=query_result['id'], name=query_result['name'], login=query_result['login'], balance=query_result['balance'])
 
     def authorize_user(self, login: str) -> tuple[int, str]:
         result = self.__db.query_row(
             self.__AUTHORIZATION_SQL,
             {"login": login}
         )
-        return (result[0], result[1])
+        return (result['id'], result['password_hash'])
 
-    def change_balance(self, login: str, diff: int):
-        self.__db.query(
+    def change_balance(self, user_id: int, diff: int):
+        print(self.__db.execute(
             self.__CHANGE_BALANCE_SQL,
-            {"login": login, "diff": diff})
+            {"diff": diff, "user_id": user_id}))
 
-    def get_id_by_login(self, login: str) -> int:
-        return self.__db.query_row(self.__GET_ID_BY_LOGIN, {"login": login})
+    def get_profile_by_id(self, user_id: int) -> User:
+        result = self.__db.query_row(
+            self.__GET_PROFILE_BY_ID_SQL,
+            {"id": user_id})
+        return self.__map_to_user(result)
 
 
 class ShopRepository:
@@ -48,16 +55,30 @@ class ShopRepository:
             FROM public.shops
             WHERE login = :login;
             """
+        self.__GET_PROFILE_BY_ID_SQL = """
+            SELECT
+                id,
+                name,
+                login
+            FROM public.shops
+            WHERE id = :id;
+            """
 
-    def __map_to_shop(query_result) -> Shop:
-        return Shop(name=query_result[0], login=query_result[1])
+    def __map_to_shop(self, query_result) -> Shop:
+        return Shop(id=query_result['id'], name=query_result['name'], login=query_result['login'])
 
     def authorize_shop(self, login: str) -> tuple[int, str]:
         result = self.__db.query_row(
             self.__AUTHORIZATION_SQL,
             {"login": login}
         )
-        return (result[0], result[1])
+        return (result['id'], result['password_hash'])
+    
+    def get_profile_by_id(self, shop_id: int) -> Shop:
+        result = self.__db.query_row(
+            self.__GET_PROFILE_BY_ID_SQL,
+            {'id': shop_id})
+        return self.__map_to_shop(result)
 
 
 class CategoryRepository:

@@ -6,7 +6,7 @@ class Producer:
     def __init__(self, bootstrap_servers, client_id):
         self.__conf = {
             "bootstrap.servers": bootstrap_servers,
-            "client_id": client_id
+            "client.id": client_id
         }
         self.__producer = ck.Producer(**self.__conf)
 
@@ -28,7 +28,7 @@ class Consumer:
         self.__consumer.subscribe(topics)
 
     def consume(self):
-        return self.__consumer.poll(1, 0)
+        return self.__consumer.poll(1.0)
 
     def close(self):
         self.__consumer.close()
@@ -51,9 +51,32 @@ def consume_messages(consumer: Consumer, msg_callback: Callable[[str], None], su
                 safe_callback(error_callback,
                               f"Error while consuming message: {msg.error()}")
                 continue
-            safe_callback(msg_callback, msg.value())
+            safe_callback(msg_callback, msg.value().decode("utf-8"))
             safe_callback(success_callback, f"Received message: {msg.value()}")
     except KeyboardInterrupt:
         pass
     finally:
         consumer.close()
+
+from confluent_kafka.admin import AdminClient, KafkaException
+
+def topic_exists(admin_client, topic_name):
+    try:
+        metadata = admin_client.list_topics(timeout=10)
+        return topic_name in metadata.topics
+    except KafkaException as e:
+        print(f"Error listing topics: {e}")
+        return False
+
+import time
+
+def wait_for_topic(bootstrap, topic_name, timeout=60, interval=5):
+    admin_client = AdminClient({'bootstrap.servers': bootstrap})
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        if topic_exists(admin_client, topic_name):
+            print(f"Topic {topic_name} is ready.")
+            return
+        print(f"Topic {topic_name} not yet available. Retrying in {interval} seconds...")
+        time.sleep(interval)
+    raise TimeoutError(f"Timed out waiting for topic {topic_name} to be ready.")

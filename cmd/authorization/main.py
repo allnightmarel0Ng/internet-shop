@@ -13,11 +13,6 @@ from internal.app.authorization.handler import AuthorizationHandler
 
 app = FastAPI()
 
-
-@app.get('/')
-async def hello():
-    return 'pong'
-
 if __name__ == '__main__':
     config = load_config()
 
