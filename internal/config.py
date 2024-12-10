@@ -37,7 +37,7 @@ def load_config() -> Config:
                   kafka_port=os.getenv("KAFKA_PORT"),
                   redis_port=os.getenv("REDIS_PORT"),
                   jwt_secret_key=os.getenv("JWT_SECRET_KEY"),
-                  session_time_in_secs=os.getenv("SESSION_TIME_IN_SECS"),
+                  session_time_in_secs=int(os.getenv("SESSION_TIME_IN_SECS")),
                   authorization_port=os.getenv("AUTHORIZATION_PORT"),
                   profile_port = os.getenv("PROFILE_PORT"),
                   gateway_port=os.getenv("GATEWAY_PORT"))

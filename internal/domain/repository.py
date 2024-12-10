@@ -6,8 +6,9 @@ class UserRepository:
     def __init__(self, db: Database):
         self.__db = db
         self.__AUTHORIZATION_SQL = """
-            SELECT id, password_hash
-            FROM public.users 
+            SELECT u.id, c.password_hash
+            FROM public.users
+            JOIN public.user_credentials AS c ON c.user_id = u.id 
             WHERE login = :login;
             """
         self.__CHANGE_BALANCE_SQL = """
@@ -26,14 +27,14 @@ class UserRepository:
             """
 
     def __map_to_user(self, query_result) -> User:
-        return User(id=query_result['id'], name=query_result['name'], login=query_result['login'], balance=query_result['balance'])
+        return User(user_id=query_result['id'], name=query_result['name'], login=query_result['login'], balance=query_result['balance'])
 
     def authorize_user(self, login: str) -> tuple[int, str]:
         result = self.__db.query_row(
             self.__AUTHORIZATION_SQL,
             {"login": login}
         )
-        return (result['id'], result['password_hash'])
+        return result['id'], result['password_hash']
 
     def change_balance(self, user_id: int, diff: int):
         print(self.__db.execute(
@@ -51,8 +52,9 @@ class ShopRepository:
     def __init__(self, db: Database):
         self.__db = db
         self.__AUTHORIZATION_SQL = """
-            SELECT id, password_hash
+            SELECT u.id, c.password_hash
             FROM public.shops
+            JOIN public.shop_credentials AS c ON c.shop_id = u.id
             WHERE login = :login;
             """
         self.__GET_PROFILE_BY_ID_SQL = """
@@ -65,14 +67,14 @@ class ShopRepository:
             """
 
     def __map_to_shop(self, query_result) -> Shop:
-        return Shop(id=query_result['id'], name=query_result['name'], login=query_result['login'])
+        return Shop(shop_id=query_result['id'], name=query_result['name'], login=query_result['login'])
 
     def authorize_shop(self, login: str) -> tuple[int, str]:
         result = self.__db.query_row(
             self.__AUTHORIZATION_SQL,
             {"login": login}
         )
-        return (result['id'], result['password_hash'])
+        return result['id'], result['password_hash']
     
     def get_profile_by_id(self, shop_id: int) -> Shop:
         result = self.__db.query_row(
@@ -85,15 +87,15 @@ class CategoryRepository:
     def __init__(self, db: Database):
         self.__db = db
         self.__GET_BY_ID_SQL = """
-            SELECT name 
+            SELECT id, name 
             FROM public.categories 
             WHERE id = :id;
             """
 
-    def __map_to_category(query_result) -> Category:
-        return Category(query_result[0])
+    def __map_to_category(self, query_result) -> Category:
+        return Category(category_id=query_result[0], name=query_result[1])
 
-    def get_category_by_id(self, id: int) -> Category:
+    def get_category_by_id(self, category_id: int) -> Category:
         return self.__map_to_category(self.__db.query_row(
             self.__GET_BY_ID_SQL, {"id", id}
         ))
