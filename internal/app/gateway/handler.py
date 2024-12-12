@@ -14,43 +14,22 @@ class GatewayHandler:
         self.router = APIRouter()
         self.router.add_api_route("/login", self.login, methods=["GET"])
         self.router.add_api_route("/logout", self.logout, methods=["POST"])
-        self.router.add_api_route("/deposit/", self.deposit, methods=["POST"])
-    
-    def __init__(self, use_case: GatewayUseCase):
-        self.__use_case = use_case
-        self.router = APIRouter()
-        self.add_routes()
+        self.router.add_api_route("/deposit", self.deposit, methods=["POST"])
+        self.router.add_api_route("/profile", self.deposit, methods=["GET"])
 
-    def add_routes(self):
-        @self.router.get("/login")
-        async def login(authorization: str = Header(None)):
-            return self.login(authorization)
-
-        @self.router.post("/logout")
-        async def logout(authorization: str = Header(None)):
-            return self.logout(authorization)
-
-        @self.router.post("/deposit")
-        async def deposit(deposit: Deposit = Body(...), authorization: str = Header(...)):
-            return self.deposit(deposit, authorization)
-        
-        @self.router.get("/profile")
-        async def profile(authorization: str = Header(...)):
-            return self.profile(authorization)
-
-    def login(self, authorization: str):
+    async def login(self, authorization: str):
         code, data = self.__use_case.authentication(authorization)
         if code != status.HTTP_200_OK:
             raise HTTPException(status_code=code, detail=data['detail'])
         return {'jwt': data['jwt']}
 
-    def logout(self, authorization: str):
+    async def logout(self, authorization: str):
         code, body = self.__use_case.logout(authorization)
         if code != status.HTTP_200_OK:
             raise HTTPException(status_code=code, detail=body['detail'])
         return
 
-    def deposit(self, deposit: Deposit, authorization: str):
+    async def deposit(self, deposit: Deposit, authorization: str):
         if deposit.money <= 0:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='unable to deposit non positive amount of money')
 
@@ -68,7 +47,7 @@ class GatewayHandler:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error')
 
-    def profile(self, authorization: str):
+    async def profile(self, authorization: str):
         try:
             return self.__use_case.profile(auth_header=authorization)
         except HTTPException as e:

@@ -97,7 +97,7 @@ class CategoryRepository:
 
     def get_category_by_id(self, category_id: int) -> Category:
         return self.__map_to_category(self.__db.query_row(
-            self.__GET_BY_ID_SQL, {"id", id}
+            self.__GET_BY_ID_SQL, {"id": id}
         ))
 
 
@@ -122,25 +122,6 @@ class ProductRepository:
             FROM public.products
             WHERE id IN
             """
-
-    def __map_to_product(query_result) -> Product:
-        return Product(Category(query_result[0]), Shop(query_result[1], query_result[2]), query_result[3], float(query_result[4]), query_result[5])
-
-    def get_product_by_id(self, id: int) -> Product:
-        return self.__map_to_product(self.__db.query_row(
-            self.__GET_BY_ID_SQL, {"id": id}
-        ))
-
-    def get_products_price_sum(self, ids: list[int]) -> int:
-        values = ' (' + ', '.join(str(id) for id in ids) + ');'
-        result = 0
-        query_result = self.__db.query(
-            self.__GET_SUM_PRICE_BY_IDS_SQL + values)
-
-        for row in query_result:
-            result += row.price
-
-        return result
 
 
 class PaycheckRepository:
@@ -173,36 +154,6 @@ class PaycheckRepository:
 
         self.__ADD_PAYCHECK_VALUE_TEMPLATE_SQL = "(COALESCE(MAX(paycheck_id), 0) + 1, {user_id}, {product_id})"
 
-    def get_user_paychecks(self, user_id: int) -> list[Paycheck]:
-        # feels buggy...
-        result: list[Paycheck] = []
-        query_result = self.__db.query(
-            self.__GET_PAYCHECKS_BY_USER_ID, {"id": user_id})
-
-        current = Paycheck(id=-1)
-        price = 0
-
-        for row in query_result:
-            if row.paycheck_id != current.id and current.id != -1:
-                result.append(current)
-                price = 0
-
-            product_price = float(product_price)
-            price += product_price
-
-            current.id = row.paycheck_id
-            current.user = User(
-                row.user_name, row.user_login, row.user_balance)
-            current.products.append(Product(Category(row.category_name), Shop(
-                row.shop_name, row.shop_login), row.product_name, row.product_price, row.product_description))
-
-        return result
-
-    def add_paycheck_for_user(self, user_id: int, product_ids: list[int]):
-        values = ', '.join(self.__ADD_PAYCHECK_VALUE_TEMPLATE_SQL.format(
-            user_id=user_id, product_id=product_id) for product_id in product_ids)
-        self.__db.query(self.__ADD_PAYCHECK_SQL + values)
-
 
 class ShoppingCartRepository:
     def __init__(self, db: Database):
@@ -217,7 +168,7 @@ class ShoppingCartRepository:
             """
         self.__GET_USERS_PRODUCTS_SQL = """
             SELECT product_id
-            FROM public.shoppint_carts
+            FROM public.shopping_carts
             WHERE user_id = :user_id
             """
         self.__DROP_USERS_PRODUCT_CART_SQL = """
@@ -225,12 +176,12 @@ class ShoppingCartRepository:
             WHERE user_id = :user_id;
             """
 
-    def add_product_to_card(self, user_id: int, product_id: int):
-        self.__db.query(self.__ADD_PRODUCT_TO_CART_SQL, {
+    def add_product_to_cart(self, user_id: int, product_id: int):
+        self.__db.execute(self.__ADD_PRODUCT_TO_CART_SQL, {
                         "user_id": user_id, "product_id": product_id})
 
     def drop_product_from_users_cart(self, user_id: int, product_id: int):
-        self.__db.query(self.__DROP_PRODUCT_FROM_USERS_CART_SQL, {
+        self.__db.execute(self.__DROP_PRODUCT_FROM_USERS_CART_SQL, {
                         "user_id": user_id, "product_id": product_id})
 
     def get_users_products(self, user_id: int) -> list[int]:
