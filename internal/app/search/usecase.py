@@ -6,9 +6,7 @@ class SearchUseCase:
 
         if not query or not isinstance(query, str) or len(query.strip()) == 0:
             return []
+        
+        query_like = query.strip().replace(" ", "%")
 
-        query_words = query.strip().split()
-
-        query_like_conditions = [f"%{word}%" for word in query_words]
-
-        return await self.repository.search(query_like_conditions)
+        return await self.repository.search(query_like)
