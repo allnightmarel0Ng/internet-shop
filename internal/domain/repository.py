@@ -48,7 +48,11 @@ class ShopRepository:
             FROM public.shops
             WHERE login = :login;
             """
-
+        self.__SEARCH_SHOPS_SQL = """
+            SELECT id, name
+            FROM public.shops
+            WHERE name ILIKE :query
+        """
     def __map_to_shop(query_result) -> Shop:
         return Shop(name=query_result[0], login=query_result[1])
 
@@ -59,7 +63,7 @@ class ShopRepository:
         )
         return (result[0], result[1])
     def search_shops(self, query: str) -> list[Shop]:
-        results = self.__db.query(self.__SEARCH_SQL, {"query": f"%{query}%"})
+        results = self.__db.query(self.__SEARCH_SHOPS_SQL, {"query": f"%{query}%"})
         return [Shop(id=row[0], name=row[1]) for row in results]
 
 
@@ -71,6 +75,11 @@ class CategoryRepository:
             FROM public.categories 
             WHERE id = :id;
             """
+        self.__SEARCH_CATEGORIES_SQL = """
+            SELECT id, name
+            FROM public.categories
+            WHERE name ILIKE :query
+        """
 
     def __map_to_category(query_result) -> Category:
         return Category(query_result[0])
@@ -80,7 +89,7 @@ class CategoryRepository:
             self.__GET_BY_ID_SQL, {"id", id}
         ))
     def search_categories(self, query: str) -> list[Category]:
-        results = self.__db.query(self.__SEARCH_SQL, {"query": f"%{query}%"})
+        results = self.__db.query(self.__SEARCH_CATEGORIES_SQL, {"query": f"%{query}%"})
         return [Category(id=row[0], name=row[1]) for row in results]
 
 
@@ -105,6 +114,11 @@ class ProductRepository:
             FROM public.products
             WHERE id IN
             """
+        self.__SEARCH_PRODUCTS_SQL = """
+            SELECT id, name, price, description
+            FROM public.products
+            WHERE name ILIKE :query
+        """
 
     def __map_to_product(query_result) -> Product:
         return Product(Category(query_result[0]), Shop(query_result[1], query_result[2]), query_result[3], float(query_result[4]), query_result[5])
@@ -126,7 +140,7 @@ class ProductRepository:
         return result
     
     def search_products(self, query: str) -> list[Product]:
-        results = self.__db.query(self.__SEARCH_SQL, {"query": f"%{query}%"})
+        results = self.__db.query(self.__SEARCH_PRODUCTS_SQL, {"query": f"%{query}%"})
         return [
             Product(
                 id=row[0],
