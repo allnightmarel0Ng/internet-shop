@@ -223,3 +223,40 @@ class ShoppingCartRepository:
     def drop_users_product_cart(self, user_id: int):
         self.__db.query(self.__DROP_USERS_PRODUCT_CART_SQL,
                         {"user_id": user_id})
+
+class SearchRepository:
+    def __init__(self, db):
+        self.db = db
+
+    async def search(self, query: str):
+        query_like = f"%{query}%"
+
+        sql = """
+        SELECT 
+            'product' AS type,
+            p.id,
+            p.name,
+            p.price,
+            p.description,
+            c.name AS category_name,
+            p.shop_id
+        FROM public.products p
+        LEFT JOIN public.categories c ON p.category_id = c.id
+        WHERE p.name ILIKE $1
+
+        UNION ALL
+
+        SELECT 
+            'category' AS type,
+            c.id,
+            c.name,
+            NULL AS price,
+            NULL AS description,
+            NULL AS category_name,
+            NULL AS shop_id
+        FROM public.categories c
+        WHERE c.name ILIKE $1
+        """
+        async with self.db.pool.acquire() as conn:
+            rows = await conn.fetch(sql, query_like)
+            return [dict(row) for row in rows]
