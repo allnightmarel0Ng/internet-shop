@@ -1,5 +1,6 @@
 from internal.app.order_management.repository import OrderManagementRepository
 
+
 class OrderManagementUseCase:
     def __init__(self, repo: OrderManagementRepository):
         self.__repo = repo

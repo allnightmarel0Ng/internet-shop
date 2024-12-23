@@ -75,7 +75,7 @@ class ShopRepository:
             {"login": login}
         )
         return result['id'], result['password_hash']
-    
+
     def get_profile_by_id(self, shop_id: int) -> Shop:
         result = self.__db.query_row(
             self.__GET_PROFILE_BY_ID_SQL,
@@ -178,11 +178,11 @@ class ShoppingCartRepository:
 
     def add_product_to_cart(self, user_id: int, product_id: int):
         self.__db.execute(self.__ADD_PRODUCT_TO_CART_SQL, {
-                        "user_id": user_id, "product_id": product_id})
+            "user_id": user_id, "product_id": product_id})
 
     def drop_product_from_users_cart(self, user_id: int, product_id: int):
         self.__db.execute(self.__DROP_PRODUCT_FROM_USERS_CART_SQL, {
-                        "user_id": user_id, "product_id": product_id})
+            "user_id": user_id, "product_id": product_id})
 
     def get_users_products(self, user_id: int) -> list[int]:
         result: list[int] = []

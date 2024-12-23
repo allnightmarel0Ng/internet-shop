@@ -14,7 +14,8 @@ class Config:
                  session_time_in_secs: int,
                  authorization_port: str,
                  profile_port: str,
-                 gateway_port: str):
+                 gateway_port: str,
+                 order_management_port: str):
         self.POSTGRES_PORT = postgres_port
         self.POSTGRES_DB = postgres_db
         self.POSTGRES_USER = postgres_user
@@ -26,6 +27,7 @@ class Config:
         self.AUTHORIZATION_PORT = authorization_port
         self.PROFILE_PORT = profile_port
         self.GATEWAY_PORT = gateway_port
+        self.ORDER_MANAGEMENT_PORT = order_management_port
 
 
 def load_config() -> Config:
@@ -39,5 +41,6 @@ def load_config() -> Config:
                   jwt_secret_key=os.getenv("JWT_SECRET_KEY"),
                   session_time_in_secs=int(os.getenv("SESSION_TIME_IN_SECS")),
                   authorization_port=os.getenv("AUTHORIZATION_PORT"),
-                  profile_port = os.getenv("PROFILE_PORT"),
-                  gateway_port=os.getenv("GATEWAY_PORT"))
+                  profile_port=os.getenv("PROFILE_PORT"),
+                  gateway_port=os.getenv("GATEWAY_PORT"),
+                  order_management_port=os.getenv("ORDER_MANAGEMENT_PORT"))

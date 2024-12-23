@@ -38,6 +38,7 @@ class Paycheck:
         self.total_price = total_price
         self.creation_time = creation_time
 
+
 class PaycheckItem:
     def __init__(self, paycheck_item_id: int, paycheck_id: int, product_id: int):
         self.id = paycheck_item_id

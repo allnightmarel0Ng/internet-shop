@@ -16,13 +16,14 @@ if __name__ == '__main__':
 
     db = Database(
         f"postgresql://{config.POSTGRES_USER}:{config.POSTGRES_PASSWORD}@postgres:{config.POSTGRES_PORT}/{config.POSTGRES_DB}")
-    
+
     shop_repository = ShopRepository(db)
     user_repository = UserRepository(db)
 
-    repo = ProfileRepository(user_repository=user_repository, shop_repository=shop_repository)
+    repo = ProfileRepository(
+        user_repository=user_repository, shop_repository=shop_repository)
     use_case = ProfileUseCase(repository=repo)
     handler = ProfileHandler(use_case=use_case)
-    
+
     app.include_router(handler.router)
     uvicorn.run(app, port=int(config.PROFILE_PORT), host="0.0.0.0")

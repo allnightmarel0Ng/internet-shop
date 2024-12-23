@@ -1,5 +1,6 @@
 from internal.domain.repository import ShoppingCartRepository
 
+
 class OrderManagementRepository:
     def __init__(self, shopping_carts: ShoppingCartRepository):
         self.__shopping_carts = shopping_carts

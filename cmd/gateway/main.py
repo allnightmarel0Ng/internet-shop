@@ -12,10 +12,11 @@ app = FastAPI()
 if __name__ == '__main__':
     try:
         config = load_config()
-        
+
         producer = Producer(f"kafka:{config.KAFKA_PORT}", 'producer')
 
-        use_case = GatewayUseCase(producer, config.AUTHORIZATION_PORT, config.PROFILE_PORT)
+        use_case = GatewayUseCase(
+            producer, config.AUTHORIZATION_PORT, config.PROFILE_PORT)
         handler = GatewayHandler(use_case)
 
         app.include_router(handler.router)
