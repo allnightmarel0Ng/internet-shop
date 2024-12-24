@@ -178,6 +178,21 @@ services:
         condition: service_healthy
     init: true
 
+  review_management:
+    build:
+      context: ..
+      dockerfile: deployments/python/Dockerfile
+      args:
+        EXPOSE_PORT: "true"
+        NAME: review_management
+        PORT: ${REVIEW_MANAGEMENT_PORT}
+    ports:
+      - "${REVIEW_MANAGEMENT_PORT}:${REVIEW_MANAGEMENT_PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    init: true
+
 
 volumes:
   internet-shop-data:

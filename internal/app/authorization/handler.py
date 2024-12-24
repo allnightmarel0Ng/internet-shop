@@ -16,7 +16,7 @@ class AuthorizationHandler:
             "/logout", self.logout, methods=["POST"])
 
     async def authentication(self, authorization: str = Header(None)):
-        if not authorization and authorization.count('Basic ') < 1:
+        if not authorization or authorization.count('Basic ') < 1:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="authorization header missing or not Basic")
 
@@ -29,7 +29,7 @@ class AuthorizationHandler:
         return {'jwt': jwt}
 
     async def authorization(self, authorization: str = Header(None)):
-        if not authorization and authorization.count('Bearer ') < 1:
+        if not authorization or authorization.count('Bearer ') < 1:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="authorization header missing or not Bearer")
 
@@ -40,7 +40,7 @@ class AuthorizationHandler:
         return {'id': entity_id, 'type': entity_type}
 
     async def logout(self, authorization: str = Header(None)):
-        if not authorization and authorization.count('Bearer ') < 1:
+        if not authorization or authorization.count('Bearer ') < 1:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="authorization header missing or not Bearer")
 

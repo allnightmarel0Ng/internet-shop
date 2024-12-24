@@ -37,10 +37,14 @@ class ProfileUseCase:
                 }
                 return response
             elif profile_type == ProfileType.USER:
-                profile, cart, paychecks = self.__repository.get_user_profile(
+                profile, cart, paychecks, reviews, stats = self.__repository.get_user_profile(
                     entity_id)
+                print(profile, cart, paychecks, reviews)
                 response = {
-                    "data": self.__encapsulate_entity(profile, is_public_boolean)
+                    "data": self.__encapsulate_entity(profile, is_public_boolean),
+                    "reviews": [item.__dict__ for item in reviews],
+                    "review_count": stats[0],
+                    "review_avg": stats[1]
                 }
                 if is_public_boolean is False:
                     response["cart"] = [item.__dict__ for item in cart]
@@ -48,18 +52,22 @@ class ProfileUseCase:
                         {"common": item[0], "products": item[1]} for item in paychecks]
                 return response
 
-            profile, category_name, shop_name = self.__repository.get_product_profile(
+            profile, reviews, stats = self.__repository.get_product_profile(
                 entity_id)
             response = {
-                "data": profile.__dict__,
-                "category": category_name,
-                "shop": shop_name
+                "data": profile[0].__dict__,
+                "category": profile[1],
+                "shop": profile[2],
+                "reviews": [item.__dict__ for item in reviews],
+                "review_count": stats[0],
+                "review_avg": stats[1]
             }
             return response
 
         except (NotFoundError, MultipleResultsFoundError):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail='invalid id of profile')
-        except:
+        except Exception as e:
+            print(str(e))
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='db error')

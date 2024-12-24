@@ -9,7 +9,7 @@ message OrderOperationResponse {
     int32 status_code = 1;
 }
 
-service OrderManagementService {
-    rpc AddProduct (OrderOperationRequest) returns (OrderOperationResponse);
-    rpc DeleteProduct (OrderOperationRequest) returns (OrderOperationResponse);
+service OrderManagement {
+    rpc add_product (OrderOperationRequest) returns (OrderOperationResponse);
+    rpc delete_product (OrderOperationRequest) returns (OrderOperationResponse);
 }

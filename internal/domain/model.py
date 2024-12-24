@@ -48,3 +48,13 @@ class ShoppingCart:
         self.id = shopping_cart_id
         self.user_id = user_id
         self.product_id = product_id
+
+
+class Review:
+    def __init__(self, review_id: int, user_id: int, product_id: int, rate: float, creation_time: str, text: str):
+        self.id = review_id
+        self.user_id = user_id
+        self.product_id = product_id
+        self.rate = rate
+        self.creation_time = creation_time
+        self.text = text

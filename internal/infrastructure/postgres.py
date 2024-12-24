@@ -27,9 +27,12 @@ class Database:
     def query(self, query: str, params: dict = None) -> list:
         try:
             with self.engine.connect() as connection:
+                print('here!!!')
                 result = connection.execute(text(query), params)
+                print('here!!')
                 return [row._asdict() for row in result]
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print(str(e))
             raise DatabaseError
 
     def execute_in_transaction(self, queries: list) -> bool:

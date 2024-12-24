@@ -4,7 +4,7 @@ import uvicorn
 from internal.config import *
 from internal.infrastructure.postgres import Database
 from internal.domain.repository import UserRepository, ShopRepository, ShoppingCartRepository, PaycheckRepository, \
-    ProductRepository
+    ProductRepository, ReviewRepository
 
 from internal.app.profile.repository import ProfileRepository
 from internal.app.profile.usecase import ProfileUseCase
@@ -23,13 +23,15 @@ if __name__ == '__main__':
     cart_repository = ShoppingCartRepository(db)
     paycheck_repository = PaycheckRepository(db)
     product_repository = ProductRepository(db)
+    review_repository = ReviewRepository(db)
 
     repo = ProfileRepository(
         user_repository=user_repository,
         shop_repository=shop_repository,
         cart_repository=cart_repository,
         paycheck_repository=paycheck_repository,
-        product_repository=product_repository)
+        product_repository=product_repository,
+        review_repository=review_repository)
     use_case = ProfileUseCase(repository=repo)
     handler = ProfileHandler(use_case=use_case)
 

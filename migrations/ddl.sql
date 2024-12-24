@@ -1,11 +1,12 @@
-DROP TABLE IF EXISTS public.shop_credentials;
+DROP TABLE IF EXISTS public.shop_credentials CASCADE;
 DROP TABLE IF EXISTS public.shops CASCADE;
-DROP TABLE IF EXISTS public.user_credentials;
+DROP TABLE IF EXISTS public.user_credentials CASCADE;
 DROP TABLE IF EXISTS public.users CASCADE;
 DROP TABLE IF EXISTS public.categories CASCADE;
 DROP TABLE IF EXISTS public.products CASCADE;
 DROP TABLE IF EXISTS public.paychecks CASCADE;
 DROP TABLE IF EXISTS public.shopping_carts CASCADE;
+DROP TABLE IF EXISTS public.reviews CASCADE;
 
 CREATE TABLE public.shops (
     id SERIAL PRIMARY KEY,
@@ -49,7 +50,7 @@ CREATE TABLE public.paychecks (
     id SERIAL PRIMARY KEY NOT NULL,
     user_id INT REFERENCES public.users(id) ON DELETE CASCADE,
     total_price DECIMAL(10, 2) NOT NULL DEFAULT 0,
-    creation_date DATE NOT NULL DEFAULT NOW()
+    creation_time TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE public.paycheck_items (
@@ -62,4 +63,13 @@ CREATE TABLE public.shopping_carts (
     id SERIAL PRIMARY KEY NOT NULL,
     user_id INT REFERENCES public.users(id) ON DELETE SET NULL,
     product_id INT REFERENCES public.products(id) ON DELETE SET NULL
+);
+
+CREATE TABLE public.reviews (
+    id SERIAL PRIMARY KEY NOT NULL,
+    user_id INT REFERENCES public.users(id) ON DELETE SET NULL,
+    product_id INT REFERENCES public.products(id) ON DELETE SET NULL,
+    rate DECIMAL(10, 2) NOT NULL,
+    creation_time TIMESTAMP NOT NULL DEFAULT NOW(),
+    text TEXT NOT NULL DEFAULT ''
 );

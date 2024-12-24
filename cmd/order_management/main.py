@@ -1,8 +1,6 @@
-import asyncio
-
 from internal.config import load_config
 
-from internal.app.order_management.handler import OrderManagementHandler, serve
+from internal.app.order_management.handler import serve
 from internal.app.order_management.usecase import OrderManagementUseCase
 from internal.app.order_management.repository import OrderManagementRepository
 from internal.domain.repository import ShoppingCartRepository

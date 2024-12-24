@@ -4,8 +4,18 @@ from pydantic import BaseModel
 from internal.app.gateway.usecase import GatewayUseCase
 
 
-class Deposit(BaseModel):
+class DepositRequest(BaseModel):
     money: int
+
+
+class ReviewCreateRequest(BaseModel):
+    product_id: int
+    rate: float
+    text: str
+
+
+class ReviewDeleteRequest(BaseModel):
+    product_id: int
 
 
 class GatewayHandler:
@@ -21,9 +31,13 @@ class GatewayHandler:
         self.router.add_api_route(
             "/api/profile/self", self.profile_self, methods=["GET"])
         self.router.add_api_route(
-            "/api/add/{product_id}", self.add_to_cart, methods=["POST"])
+            "/api/cart/add/{product_id}", self.add_to_cart, methods=["POST"])
         self.router.add_api_route(
-            "/api/delete/{product_id}", self.delete_from_cart, methods=["DELETE"])
+            "/api/cart/delete/{product_id}", self.delete_from_cart, methods=["DELETE"])
+        self.router.add_api_route(
+            "/api/review/create", self.create_review, methods=["POST"])
+        self.router.add_api_route(
+            "/api/review/delete", self.delete_review, methods=["DELETE"])
 
     async def login(self, authorization: str = Header(None)):
         code, data = self.__use_case.authentication(authorization)
@@ -36,17 +50,13 @@ class GatewayHandler:
         if code != status.HTTP_200_OK:
             raise HTTPException(status_code=code, detail=body['detail'])
 
-    async def deposit(self, deposit: Deposit, authorization: str = Header(None)):
-        if deposit.money <= 0:
+    async def deposit(self, body: DepositRequest, authorization: str = Header(None)):
+        if body.money <= 0:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail='unable to deposit non positive amount of money')
 
-        if not authorization or authorization.count('Bearer ') != 1:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail='invalid authorization format')
-
         code, detail = self.__use_case.deposit(
-            deposit.money, auth_header=authorization)
+            body.money, auth_header=authorization)
         if code != status.HTTP_200_OK:
             raise HTTPException(status_code=code, detail=detail['detail'])
 
@@ -57,10 +67,15 @@ class GatewayHandler:
         return self.__use_case.profile_other(entity_type, entity_id)
 
     async def add_to_cart(self, product_id: int, authorization: str = Header(None)):
-        print(product_id)
-        self.__use_case.add_to_cart(
+        return self.__use_case.add_to_cart(
             auth_header=authorization, product_id=product_id)
 
     async def delete_from_cart(self, product_id: int, authorization: str = Header(None)):
-        self.__use_case.delete_from_cart(
+        return self.__use_case.delete_from_cart(
             auth_header=authorization, product_id=product_id)
+
+    async def create_review(self, body: ReviewCreateRequest, authorization: str = Header(None)):
+        return self.__use_case.create_review(authorization, body.product_id, body.rate, body.text)
+
+    async def delete_review(self, body: ReviewDeleteRequest, authorization: str = Header(None)):
+        return self.__use_case.delete_review(authorization, body.product_id)

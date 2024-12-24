@@ -4,21 +4,24 @@ import json
 
 from fastapi import status, HTTPException
 
+from internal.protos.review_management.review_management_pb2 import CreateReviewRequest, DeleteReviewRequest
 from internal.infrastructure.kafka import Producer
-from internal.protos.order_management.order_management_pb2_grpc import OrderManagementServiceStub
+from internal.protos.order_management.order_management_pb2_grpc import OrderManagementStub
 from internal.protos.order_management.order_management_pb2 import OrderOperationRequest
+from internal.protos.review_management.review_management_pb2_grpc import ReviewManagementStub
 
 
 class GatewayUseCase:
-    def __init__(self, producer: Producer, authorization_port: str, profile_port: str, order_management_port: str):
+    def __init__(self, producer: Producer, authorization_port: str, profile_port: str, order_management_port: str, review_management_port: str):
         self.__producer = producer
         self.__authorization_port = authorization_port
         self.__profile_port = profile_port
         self.__order_management_port = order_management_port
+        self.__review_management_port = review_management_port
 
     @staticmethod
-    def __fetch_get(url):
-        response = requests.get(url)
+    def __fetch_get(url, headers=None):
+        response = requests.get(url, headers=headers)
         response_data = response.json()
         if response.status_code != status.HTTP_200_OK:
             raise HTTPException(status_code=response.status_code,
@@ -26,12 +29,7 @@ class GatewayUseCase:
         return response_data
 
     def __authorization(self, auth_header: str) -> dict:
-        response = requests.get(
-            f"http://authorization:{self.__authorization_port}/authorization", headers={'Authorization': auth_header})
-        if response.status_code != 200:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail='unable to authorize the request')
-        return response.json()
+        return self.__fetch_get(f"http://authorization:{self.__authorization_port}/authorization", headers={'Authorization': auth_header})
 
     def authentication(self, auth_header: str):
         response = requests.get(
@@ -69,20 +67,58 @@ class GatewayUseCase:
     def add_to_cart(self, auth_header: str, product_id: int):
         self.__cart_operation(
             to_add=True, auth_header=auth_header, product_id=product_id)
+        return 'success'
 
     def delete_from_cart(self, auth_header: str, product_id: int):
         self.__cart_operation(
             to_add=False, auth_header=auth_header, product_id=product_id)
+        return 'success'
 
     def __cart_operation(self, to_add: bool, auth_header: str, product_id: int):
         response_data = self.__authorization(auth_header)
 
+        if response_data['type'] != 'user':
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='shops cant manage carts')
+
         with grpc.insecure_channel(f"order_management:{self.__order_management_port}") as channel:
-            stub = OrderManagementServiceStub(channel)
+            stub = OrderManagementStub(channel)
 
             if to_add is True:
-                stub.AddProduct(OrderOperationRequest(
+                stub.add_product(OrderOperationRequest(
                     user_id=response_data['id'], product_id=product_id))
             else:
-                stub.DeleteProduct(OrderOperationRequest(
+                stub.delete_product(OrderOperationRequest(
                     user_id=response_data['id'], product_id=product_id))
+
+    def create_review(self, auth_header: str, product_id: int, rate: float, text: str):
+        if rate > 5.0 or rate < 1.0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='rate must be between 1 and 5')
+
+        response_data = self.__authorization(auth_header)
+
+        if response_data['type'] != 'user':
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='shops cant create reviews')
+
+        with grpc.insecure_channel(f"review_management:{self.__review_management_port}") as channel:
+            stub = ReviewManagementStub(channel)
+            stub.create_review(CreateReviewRequest(
+                user_id=response_data['id'], product_id=product_id, rate=rate, text=text))
+
+        return 'success'
+
+    def delete_review(self, auth_header: str, product_id: int):
+        response_data = self.__authorization(auth_header)
+
+        if response_data['type'] != 'user':
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='shops cant delete review')
+
+        with grpc.insecure_channel(f"review_management:{self.__review_management_port}") as channel:
+            stub = ReviewManagementStub(channel)
+            stub.create_review(DeleteReviewRequest(
+                user_id=response_data['id'], product_id=product_id))
+
+        return 'success'
