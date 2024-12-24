@@ -1,38 +1,36 @@
-INSERT INTO public.users (name, login, password_hash, balance) VALUES
-    ('abcda', 'abcda', '$2a$12$Cvgk5xE8T4DTmn3sXc0V2.3921QoiXUHBWkqkgQJ7QJpZQOFsUNMG', 11);
+INSERT INTO public.users (name, login, balance) VALUES
+    ('abcda', 'abcda', 11);
+INSERT INTO public.user_credentials (user_id, password_hash) VALUES
+    (1, '$2a$12$JW3d/sYRabE8ogw.khAToOrvWLV7HOran4SnvYF4O6Y2/Gq4cnrfG');
 
-INSERT INTO public.shops (name, login, password_hash) VALUES
-    ('goodshop', 'goodshop', '$2a$12$Cvgk5xE8T4DTmn3sXc0V2.3921QoiXUHBWkqkgQJ7QJpZQOFsUNMG');
-
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (shop_id, '$2b$12$WmoYFOlzFD75dxSCGQiIkugdCdkQ2dJxRsg7EPzGQ9JzRqPtcrSRG');
 INSERT INTO public.shops (name, login) VALUES ('!Якутск Орджоникидзе, 56 фран', 'yakutsk_ordzhonikidze_56_fran_0');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (0, '$2b$12$suCmYzYm3lZ2cqz3f.k8cO50X52KBZIuTBbANtSiPpM/VoepUioPC');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (1, '$2b$12$suCmYzYm3lZ2cqz3f.k8cO50X52KBZIuTBbANtSiPpM/VoepUioPC');
 INSERT INTO public.shops (name, login) VALUES ('!Якутск ТЦ "Центральный" фран', 'yakutsk_tts_tsentralnyy_fran_1');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (1, '$2b$12$nNRbGbC..uxY2dKCgAi4N.i/cYBqTNQ1Tn5YW7MxldN6opkaMD2s6');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (2, '$2b$12$nNRbGbC..uxY2dKCgAi4N.i/cYBqTNQ1Tn5YW7MxldN6opkaMD2s6');
 INSERT INTO public.shops (name, login) VALUES ('Адыгея ТЦ "Мега"', 'adygeya_tts_mega_2');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (2, '$2b$12$OsfuJ61uV5vEyawLqWYsO.j8Z25khND5rlf.qM2DcoQ8VYB/q4aRq');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (3, '$2b$12$OsfuJ61uV5vEyawLqWYsO.j8Z25khND5rlf.qM2DcoQ8VYB/q4aRq');
 INSERT INTO public.shops (name, login) VALUES ('Балашиха ТРК "Октябрь-Киномир"', 'balashiha_trk_oktyabr_kinomir_3');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (3, '$2b$12$2kUdpqnDnTtqmuUxMdqDeOKkX.auXHf401YLuGssbHRFsxGK9r7hS');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (4, '$2b$12$2kUdpqnDnTtqmuUxMdqDeOKkX.auXHf401YLuGssbHRFsxGK9r7hS');
 INSERT INTO public.shops (name, login) VALUES ('Волжский ТЦ "Волга Молл"', 'volzhskiy_tts_volga_moll_4');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (4, '$2b$12$0inVIMLpUZsNVVPWAHZnjOFYxf7lE0UDGZ332VL6jkGaf9RnOvp9y');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (5, '$2b$12$0inVIMLpUZsNVVPWAHZnjOFYxf7lE0UDGZ332VL6jkGaf9RnOvp9y');
 INSERT INTO public.shops (name, login) VALUES ('Вологда ТРЦ "Мармелад"', 'vologda_trts_marmelad_5');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (5, '$2b$12$.bnA/x4BgBsxY1p06I5uu.NX6bbZhUdVMpZGpL3IgbymTVniPvkx.');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (6, '$2b$12$.bnA/x4BgBsxY1p06I5uu.NX6bbZhUdVMpZGpL3IgbymTVniPvkx.');
 INSERT INTO public.shops (name, login) VALUES ('Воронеж (Плехановская, 13)', 'voronezh_plehanovskaya_13_6');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (6, '$2b$12$f2R5mr3tsKOc21.BxM6F1ecFdM4Wnf946QYa52YYeI1cJgY08/hTW');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (7, '$2b$12$f2R5mr3tsKOc21.BxM6F1ecFdM4Wnf946QYa52YYeI1cJgY08/hTW');
 INSERT INTO public.shops (name, login) VALUES ('Воронеж ТРЦ "Максимир"', 'voronezh_trts_maksimir_7');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (7, '$2b$12$gnUozAa5KKP6KDvpUTVgFer1aFP1/c3cAugtN7rz5jNVyifKdieOO');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (8, '$2b$12$gnUozAa5KKP6KDvpUTVgFer1aFP1/c3cAugtN7rz5jNVyifKdieOO');
 INSERT INTO public.shops (name, login) VALUES ('Воронеж ТРЦ Сити-Парк "Град"', 'voronezh_trts_siti_park_grad_8');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (8, '$2b$12$QnHJdtKzqJJO4FagUaiuO.RGil8JvLGQNXm1ycy7feUdAgriKF8Ty');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (9, '$2b$12$QnHJdtKzqJJO4FagUaiuO.RGil8JvLGQNXm1ycy7feUdAgriKF8Ty');
 INSERT INTO public.shops (name, login) VALUES ('Выездная Торговля', 'vyezdnaya_torgovlya_9');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (9, '$2b$12$MReSUi/nftyGa2gItTl1RuiWGr3BKw9kUvk1RKPiEy5AEZFk9xiSO');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (10, '$2b$12$MReSUi/nftyGa2gItTl1RuiWGr3BKw9kUvk1RKPiEy5AEZFk9xiSO');
 INSERT INTO public.shops (name, login) VALUES ('Жуковский ул. Чкалова 39м?', 'zhukovskiy_ul_chkalova_39m?_10');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (10, '$2b$12$OVHtto3F3vtBYx/rlQOeL.I/Qi7aaJ9gZy6C5ygLDtvA.nkhfvUE6');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (11, '$2b$12$OVHtto3F3vtBYx/rlQOeL.I/Qi7aaJ9gZy6C5ygLDtvA.nkhfvUE6');
 INSERT INTO public.shops (name, login) VALUES ('Жуковский ул. Чкалова 39м²', 'zhukovskiy_ul_chkalova_39m²_11');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (11, '$2b$12$cu9bNsXCuqVMTs00s.tXv.pZfKJmFIMGQmkjm3e3nRME/h8gDiDgG');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (12, '$2b$12$cu9bNsXCuqVMTs00s.tXv.pZfKJmFIMGQmkjm3e3nRME/h8gDiDgG');
 INSERT INTO public.shops (name, login) VALUES ('Интернет-магазин ЧС', 'internet_magazin_chs_12');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (12, '$2b$12$6WHkPQKYzfboXVbeIKooEuST.Nj4SMocT5skhkdkPol5dtmsNgtym');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (13, '$2b$12$6WHkPQKYzfboXVbeIKooEuST.Nj4SMocT5skhkdkPol5dtmsNgtym');
 INSERT INTO public.shops (name, login) VALUES ('Казань ТЦ "Бехетле"', 'kazan_tts_behetle_13');
-INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (13, '$2b$12$VAcqfhzR3JfBruqxdwFeJOslpP8rtjJeoiP0h2erhD2OQL6PZeXAG');
+INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (14, '$2b$12$VAcqfhzR3JfBruqxdwFeJOslpP8rtjJeoiP0h2erhD2OQL6PZeXAG');
 INSERT INTO public.shops (name, login) VALUES ('Казань ТЦ "ПаркХаус" II', 'kazan_tts_parkhaus_II_14');
 INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (14, '$2b$12$3hg3cZLlAoKIKApGKJ.K2.qMH/KAYA0ZABvx3RG20QpCtCdL8b4S6');
 INSERT INTO public.shops (name, login) VALUES ('Калуга ТРЦ "XXI век"', 'kaluga_trts_XXI_vek_15');
@@ -126,7 +124,6 @@ INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (58, '$2b$12
 INSERT INTO public.shops (name, login) VALUES ('Ярославль ТЦ "Альтаир"', 'yaroslavl_tts_altair_59');
 INSERT INTO public.shop_credentials (shop_id, password_hash) VALUES (59, '$2b$12$4mYgJDVXpM7gJD4LKMZvJelgEBwwOKBBArva.POs3HaFdPjNjzdfm');
 
-INSERT INTO public.categories (name) VALUES ('item_category_name');
 INSERT INTO public.categories (name) VALUES ('PC - Гарнитуры/Наушники');
 INSERT INTO public.categories (name) VALUES ('Аксессуары - PS2');
 INSERT INTO public.categories (name) VALUES ('Аксессуары - PS3');

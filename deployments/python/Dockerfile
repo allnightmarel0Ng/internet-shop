@@ -15,8 +15,12 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 COPY . /app
 
+ARG EXPOSE_PORT
 ARG PORT
-EXPOSE ${PORT}
+
+RUN if [ -n "$EXPOSE_PORT" ]; then \
+        echo "EXPOSE $PORT" >> /app/Dockerfile.tmp; \
+    fi
 
 ARG NAME
 COPY ./cmd/${NAME}/main.py ./main.py

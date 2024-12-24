@@ -1,6 +1,8 @@
+import asyncio
+
 from internal.config import load_config
 
-from internal.app.order_management.handler import OrderManagementHandler
+from internal.app.order_management.handler import OrderManagementHandler, serve
 from internal.app.order_management.usecase import OrderManagementUseCase
 from internal.app.order_management.repository import OrderManagementRepository
 from internal.domain.repository import ShoppingCartRepository
@@ -15,4 +17,4 @@ if __name__ == '__main__':
     carts = ShoppingCartRepository(db)
     repo = OrderManagementRepository(carts)
     use_case = OrderManagementUseCase(repo)
-    OrderManagementHandler().serve(use_case, config.ORDER_MANAGEMENT_PORT)
+    serve(use_case, config.ORDER_MANAGEMENT_PORT)

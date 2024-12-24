@@ -84,7 +84,9 @@ services:
       retries: 5
 
   init-postgres:
-    image: postgres:13-alpine
+    build:
+      context: ..
+      dockerfile: deployments/init_postgres/Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
@@ -96,14 +98,13 @@ services:
       psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /migrations/ddl.sql
       psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /migrations/dml.sql
       "
-    volumes:
-      - ../migrations:/migrations
     
   authorization:
     build:
       context: ..
       dockerfile: deployments/python/Dockerfile
       args:
+        EXPOSE_PORT: "true"
         PORT: ${AUTHORIZATION_PORT}
         NAME: authorization
     ports:
@@ -120,6 +121,7 @@ services:
       context: ..
       dockerfile: deployments/python/Dockerfile
       args:
+        EXPOSE_PORT: "true"
         PORT: ${GATEWAY_PORT}
         NAME: gateway
     ports:
@@ -137,9 +139,6 @@ services:
       dockerfile: deployments/python/Dockerfile
       args:
         NAME: money_operations
-        PORT: ${MONEY_OPERATIONS_PORT}
-    ports:
-      - "${MONEY_OPERATIONS_PORT}:${MONEY_OPERATIONS_PORT}"
     depends_on:
       kafka:
         condition: service_healthy
@@ -154,6 +153,7 @@ services:
       context: ..
       dockerfile: deployments/python/Dockerfile
       args:
+        EXPOSE_PORT: "true"
         NAME: profile
         PORT: ${PROFILE_PORT}
     ports:
@@ -163,7 +163,22 @@ services:
         condition: service_healthy
     init: true
 
-    
+  order_management:
+    build:
+      context: ..
+      dockerfile: deployments/python/Dockerfile
+      args:
+        EXPOSE_PORT: "true"
+        NAME: order_management
+        PORT: ${ORDER_MANAGEMENT_PORT}
+    ports:
+      - "${ORDER_MANAGEMENT_PORT}:${ORDER_MANAGEMENT_PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    init: true
+
+
 volumes:
   internet-shop-data:
   internet-shop-redis-data:

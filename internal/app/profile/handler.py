@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 
 from internal.app.profile.usecase import ProfileUseCase, ProfileType
 
@@ -8,12 +8,19 @@ class ProfileHandler:
         self.__use_case = use_case
         self.router = APIRouter()
         self.router.add_api_route(
-            "/shop/{shop_id}", self.shop_profile, methods=["GET"])
-        self.router.add_api_route(
-            "/user/{user_id}", self.user_profile, methods=["GET"])
+            "/{profile_type}/{profile_id}", self.profile, methods=["GET"])
 
-    async def shop_profile(self, shop_id):
-        return self.__use_case.get_profile_json(ProfileType.SHOP, shop_id)
+    @staticmethod
+    def __str_to_enum(profile_type: str) -> ProfileType:
+        if profile_type == "shop":
+            return ProfileType.SHOP
+        elif profile_type == "user":
+            return ProfileType.USER
+        elif profile_type == "product":
+            return ProfileType.PRODUCT
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="invalid profile type")
 
-    async def user_profile(self, user_id):
-        return self.__use_case.get_profile_json(ProfileType.USER, user_id)
+    async def profile(self, profile_type: str, profile_id: int, is_public: str = None):
+        return self.__use_case.get_profile_json(self.__str_to_enum(profile_type), profile_id, is_public)

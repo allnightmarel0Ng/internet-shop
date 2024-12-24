@@ -1,15 +1,11 @@
+DROP TABLE IF EXISTS public.shop_credentials;
 DROP TABLE IF EXISTS public.shops CASCADE;
+DROP TABLE IF EXISTS public.user_credentials;
 DROP TABLE IF EXISTS public.users CASCADE;
 DROP TABLE IF EXISTS public.categories CASCADE;
 DROP TABLE IF EXISTS public.products CASCADE;
 DROP TABLE IF EXISTS public.paychecks CASCADE;
 DROP TABLE IF EXISTS public.shopping_carts CASCADE;
-
-CREATE TABLE public.shop_credentials (
-    id SERIAL PRIMARY KEY,
-    shop_id INT REFERENCES public.shops(id) ON DELETE CASCADE,
-    password_hash VARCHAR(70) NOT NULL
-);
 
 CREATE TABLE public.shops (
     id SERIAL PRIMARY KEY,
@@ -17,17 +13,23 @@ CREATE TABLE public.shops (
     login VARCHAR(30) NOT NULL UNIQUE
 );
 
-CREATE TABLE public.user_credentials (
+CREATE TABLE public.shop_credentials (
     id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES public.users(id) ON DELETE CASCADE,
+    shop_id INT REFERENCES public.shops(id) ON DELETE CASCADE,
     password_hash VARCHAR(70) NOT NULL
 );
 
 CREATE TABLE public.users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
-    login VARCHAR (30) NOT NULL UNIQUE
+    login VARCHAR (30) NOT NULL UNIQUE,
     balance DECIMAL(10, 2) NOT NULL CHECK (balance > 0)
+);
+
+CREATE TABLE public.user_credentials (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES public.users(id) ON DELETE CASCADE,
+    password_hash VARCHAR(70) NOT NULL
 );
 
 CREATE TABLE public.categories (
@@ -39,7 +41,7 @@ CREATE TABLE public.products (
     id SERIAL PRIMARY KEY NOT NULL,
     category_id INT REFERENCES public.categories(id) ON DELETE SET NULL,
     shop_id INT REFERENCES public.shops(id) ON DELETE SET NULL,
-    name VARCHAR(50) NOT NULL,
+    name VARCHAR(256) NOT NULL,
     price DECIMAL(10, 2) NOT NULL
 );
 

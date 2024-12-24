@@ -14,10 +14,16 @@ class GatewayHandler:
         self.router = APIRouter()
         self.router.add_api_route("/api/login", self.login, methods=["GET"])
         self.router.add_api_route("/api/logout", self.logout, methods=["POST"])
-        self.router.add_api_route("/api/deposit", self.deposit, methods=["POST"])
-        self.router.add_api_route("/api/profile/self", self.profile_self, methods=["GET"])
-        self.router.add_api_route("/api/add/{product_id}", self.add_to_cart, methods=["POST"])
-        self.router.add_api_route("/api/delete/{product_id}", self.delete_from_cart, methods=["DELETE"])
+        self.router.add_api_route(
+            "/api/deposit", self.deposit, methods=["POST"])
+        self.router.add_api_route(
+            "/api/profile/{entity_type}/{entity_id}", self.profile_other, methods=["GET"])
+        self.router.add_api_route(
+            "/api/profile/self", self.profile_self, methods=["GET"])
+        self.router.add_api_route(
+            "/api/add/{product_id}", self.add_to_cart, methods=["POST"])
+        self.router.add_api_route(
+            "/api/delete/{product_id}", self.delete_from_cart, methods=["DELETE"])
 
     async def login(self, authorization: str = Header(None)):
         code, data = self.__use_case.authentication(authorization)
@@ -45,10 +51,16 @@ class GatewayHandler:
             raise HTTPException(status_code=code, detail=detail['detail'])
 
     async def profile_self(self, authorization: str = Header(None)):
-        return self.__use_case.profile(auth_header=authorization)
+        return self.__use_case.profile_self(auth_header=authorization)
+
+    async def profile_other(self, entity_type: str, entity_id: int):
+        return self.__use_case.profile_other(entity_type, entity_id)
 
     async def add_to_cart(self, product_id: int, authorization: str = Header(None)):
-        self.__use_case.add_to_cart(auth_header=authorization, product_id=product_id)
+        print(product_id)
+        self.__use_case.add_to_cart(
+            auth_header=authorization, product_id=product_id)
 
     async def delete_from_cart(self, product_id: int, authorization: str = Header(None)):
-        self.__use_case.delete_from_cart(auth_header=authorization, product_id=product_id)
+        self.__use_case.delete_from_cart(
+            auth_header=authorization, product_id=product_id)

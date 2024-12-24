@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import order_management_pb2 as order__management__pb2
+import internal.protos.order_management.order_management_pb2 as order__management__pb2
 
 GRPC_GENERATED_VERSION = '1.68.1'
 GRPC_VERSION = grpc.__version__

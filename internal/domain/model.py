@@ -1,6 +1,3 @@
-import datetime
-
-
 class Shop:
     def __init__(self, shop_id: int, name: str, login: str):
         self.id = shop_id
@@ -32,7 +29,7 @@ class Product:
 
 
 class Paycheck:
-    def __init__(self, paycheck_id: int, user_id: int, total_price: float, creation_time: datetime.time):
+    def __init__(self, paycheck_id: int, user_id: int, total_price: float, creation_time: str):
         self.id = paycheck_id
         self.user_id = user_id
         self.total_price = total_price

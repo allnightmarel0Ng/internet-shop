@@ -8,12 +8,22 @@ from internal.infrastructure.kafka import Producer
 from internal.protos.order_management.order_management_pb2_grpc import OrderManagementServiceStub
 from internal.protos.order_management.order_management_pb2 import OrderOperationRequest
 
+
 class GatewayUseCase:
-    def __init__(self, producer: Producer, authorization_port: int, profile_port: int, order_management_port: int):
+    def __init__(self, producer: Producer, authorization_port: str, profile_port: str, order_management_port: str):
         self.__producer = producer
         self.__authorization_port = authorization_port
         self.__profile_port = profile_port
         self.__order_management_port = order_management_port
+
+    @staticmethod
+    def __fetch_get(url):
+        response = requests.get(url)
+        response_data = response.json()
+        if response.status_code != status.HTTP_200_OK:
+            raise HTTPException(status_code=response.status_code,
+                                detail=response_data['detail'])
+        return response_data
 
     def __authorization(self, auth_header: str) -> dict:
         response = requests.get(
@@ -49,22 +59,20 @@ class GatewayUseCase:
         self.__producer.produce('money_operations', json.dumps(msg_dict))
         return status.HTTP_200_OK, 'success'
 
-    def profile(self, auth_header: str):
+    def profile_self(self, auth_header: str):
         response_data = self.__authorization(auth_header)
+        return self.__fetch_get(f"http://profile:{self.__profile_port}/{response_data['type']}/{response_data['id']}")
 
-        response = requests.get(
-            f"http://profile:{self.__profile_port}/{response_data['type']}/{response_data['id']}")
-        response_data = response.json()
-        if response.status_code != status.HTTP_200_OK:
-            raise HTTPException(status_code=response.status_code,
-                                detail=response_data['detail'])
-        return response_data
+    def profile_other(self, entity_type: str, entity_id: int):
+        return self.__fetch_get(f"http://profile:{self.__profile_port}/{entity_type}/{entity_id}?is_public=True")
 
     def add_to_cart(self, auth_header: str, product_id: int):
-        self.__cart_operation(to_add=True, auth_header=auth_header, product_id=product_id)
+        self.__cart_operation(
+            to_add=True, auth_header=auth_header, product_id=product_id)
 
     def delete_from_cart(self, auth_header: str, product_id: int):
-        self.__cart_operation(to_add=False, auth_header=auth_header, product_id=product_id)
+        self.__cart_operation(
+            to_add=False, auth_header=auth_header, product_id=product_id)
 
     def __cart_operation(self, to_add: bool, auth_header: str, product_id: int):
         response_data = self.__authorization(auth_header)
@@ -73,6 +81,8 @@ class GatewayUseCase:
             stub = OrderManagementServiceStub(channel)
 
             if to_add is True:
-                stub.AddProduct(OrderOperationRequest(user_id=response_data['id'], product_id=product_id))
+                stub.AddProduct(OrderOperationRequest(
+                    user_id=response_data['id'], product_id=product_id))
             else:
-                stub.DeleteProduct(OrderOperationRequest(user_id=response_data['id'], product_id=product_id))
+                stub.DeleteProduct(OrderOperationRequest(
+                    user_id=response_data['id'], product_id=product_id))

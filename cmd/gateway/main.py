@@ -16,7 +16,7 @@ if __name__ == '__main__':
         producer = Producer(f"kafka:{config.KAFKA_PORT}", 'producer')
 
         use_case = GatewayUseCase(
-            producer, config.AUTHORIZATION_PORT, config.PROFILE_PORT)
+            producer, config.AUTHORIZATION_PORT, config.PROFILE_PORT, config.ORDER_MANAGEMENT_PORT)
         handler = GatewayHandler(use_case)
 
         app.include_router(handler.router)
