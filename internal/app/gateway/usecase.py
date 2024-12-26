@@ -12,12 +12,13 @@ from internal.protos.review_management.review_management_pb2_grpc import ReviewM
 
 
 class GatewayUseCase:
-    def __init__(self, producer: Producer, authorization_port: str, profile_port: str, order_management_port: str, review_management_port: str):
+    def __init__(self, producer: Producer, authorization_port: str, profile_port: str, order_management_port: str, review_management_port: str, search_port: str):
         self.__producer = producer
         self.__authorization_port = authorization_port
         self.__profile_port = profile_port
         self.__order_management_port = order_management_port
         self.__review_management_port = review_management_port
+        self.__search_port = search_port
 
     @staticmethod
     def __fetch_get(url, headers=None):
@@ -42,7 +43,8 @@ class GatewayUseCase:
         return response.status_code, response.json()
 
     def register(self, payload: dict):
-        response = requests.post(f"http://authorization:{self.__authorization_port}/register", json=payload)
+        response = requests.post(
+            f"http://authorization:{self.__authorization_port}/register", json=payload)
         return response.status_code, response.json()
 
     def deposit(self, money: int, auth_header: str):
@@ -147,3 +149,8 @@ class GatewayUseCase:
                 user_id=response_data['id'], product_id=product_id))
 
         return 'success'
+
+    def search(self, payload: dict):
+        response = requests.post(
+            f"http://search:{self.__search_port}/search", json=payload)
+        return response.status_code, response.json()

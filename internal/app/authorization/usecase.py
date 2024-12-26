@@ -30,9 +30,11 @@ class AuthorizationUseCase:
         password = tokens[2]
 
         if entity_type == "shop":
-            entity_id, password_hash = self.__repository.authenticate_shop(login)
+            entity_id, password_hash = self.__repository.authenticate_shop(
+                login)
         elif entity_type == "user":
-            entity_id, password_hash = self.__repository.authenticate_user(login)
+            entity_id, password_hash = self.__repository.authenticate_user(
+                login)
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail='invalid entity type')
@@ -71,8 +73,10 @@ class AuthorizationUseCase:
 
     def register_user(self, name: str, login: str, password: str):
         if self.__repository.check_registered_user(login):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='user already registered')
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='user already registered')
 
         salt = bcrypt.gensalt()
-        password_hash = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+        password_hash = bcrypt.hashpw(
+            password.encode('utf-8'), salt).decode('utf-8')
         self.__repository.register_user(name, login, password_hash)

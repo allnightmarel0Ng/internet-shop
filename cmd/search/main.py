@@ -3,16 +3,11 @@ import uvicorn
 
 from internal.config import load_config
 from internal.infrastructure.postgres import Database
-from internal.domain.repository import SearchRepository
+from internal.app.search.repository import SearchRepository
 from internal.app.search.usecase import SearchUseCase
 from internal.app.search.handler import SearchHandler
 
 app = FastAPI()
-
-
-@app.get("/")
-async def root():
-    return 'pong'
 
 if __name__ == "__main__":
     config = load_config()
@@ -27,4 +22,4 @@ if __name__ == "__main__":
 
     app.include_router(handler.router)
 
-    uvicorn.run(app, host="0.0.0.0", port=int(config.SEARCH_SERVICE_PORT))
+    uvicorn.run(app, host="0.0.0.0", port=int(config.SEARCH_PORT))

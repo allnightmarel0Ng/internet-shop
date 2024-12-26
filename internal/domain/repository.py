@@ -89,10 +89,11 @@ class ShopRepository:
         """
 
     __SEARCH_SHOPS_SQL = """
-        SELECT id, name
+        SELECT id, name, login
         FROM public.shops
-        WHERE name ILIKE :query
+        WHERE name ILIKE :query;
         """
+
     def __init__(self, db: Database):
         self.__db = db
 
@@ -112,6 +113,10 @@ class ShopRepository:
             self.__GET_PROFILE_BY_ID_SQL,
             {'id': shop_id})
         return self.__map_to_shop(result)
+
+    def search_shops(self, query: str):
+        rows = self.__db.query(self.__SEARCH_SHOPS_SQL, {"query": f"%{query}%"})
+        return [self.__map_to_shop(row) for row in rows]
 
 # seems useless ...
 # class CategoryRepository:
@@ -192,7 +197,8 @@ class ProductRepository:
         return result
 
     def search_products(self, query: str) -> list[Product]:
-        results = self.__db.query(self.__SEARCH_PRODUCTS_SQL, {"query": f"%{query}%"})
+        results = self.__db.query(self.__SEARCH_PRODUCTS_SQL, {
+                                  "query": f"%{query}%"})
         return [
             self.map_to_product(row) for row in results
         ]

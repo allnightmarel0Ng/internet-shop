@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from internal.app.gateway.usecase import GatewayUseCase
 from internal.app.authorization.handler import RegisterForm
+from internal.app.search.handler import SearchRequest
 
 
 class DepositRequest(BaseModel):
@@ -23,24 +24,33 @@ class GatewayHandler:
     def __init__(self, use_case: GatewayUseCase):
         self.__use_case = use_case
         self.router = APIRouter()
+
         self.router.add_api_route("/api/login", self.login, methods=["GET"])
         self.router.add_api_route("/api/logout", self.logout, methods=["POST"])
-        self.router.add_api_route("/api/register", self.register, methods=["POST"])
+        self.router.add_api_route(
+            "/api/register", self.register, methods=["POST"])
+
         self.router.add_api_route(
             "/api/deposit", self.deposit, methods=["POST"])
         self.router.add_api_route("/api/buy", self.buy, methods=["POST"])
+
         self.router.add_api_route(
             "/api/profile/{entity_type}/{entity_id}", self.profile_other, methods=["GET"])
         self.router.add_api_route(
             "/api/profile/self", self.profile_self, methods=["GET"])
+
         self.router.add_api_route(
             "/api/cart/add/{product_id}", self.add_to_cart, methods=["POST"])
         self.router.add_api_route(
             "/api/cart/delete/{product_id}", self.delete_from_cart, methods=["DELETE"])
+
         self.router.add_api_route(
             "/api/review/create", self.create_review, methods=["POST"])
         self.router.add_api_route(
             "/api/review/delete", self.delete_review, methods=["DELETE"])
+
+        self.router.add_api_route(
+            "/api/search", self.search, methods=["POST"])
 
     async def login(self, authorization: str = Header(None)):
         code, data = self.__use_case.authentication(authorization)
@@ -90,3 +100,9 @@ class GatewayHandler:
 
     async def delete_review(self, body: ReviewDeleteRequest, authorization: str = Header(None)):
         return self.__use_case.delete_review(authorization, body.product_id)
+
+    async def search(self, body: SearchRequest):
+        code, result = self.__use_case.search(body.__dict__)
+        if code != status.HTTP_200_OK:
+            raise HTTPException(status_code=code, detail=result['detail'])
+        return result

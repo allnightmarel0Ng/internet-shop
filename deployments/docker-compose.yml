@@ -177,6 +177,21 @@ services:
         condition: service_healthy
     init: true
 
+  search:
+    build:
+      context: ..
+      dockerfile: deployments/python/Dockerfile
+      args:
+        EXPOSE_PORT: "true"
+        NAME: search
+        PORT: ${SEARCH_PORT}
+    ports:
+      - "${SEARCH_PORT}:${SEARCH_PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    init: true
+
 
 volumes:
   internet-shop-data:

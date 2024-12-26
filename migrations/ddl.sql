@@ -10,8 +10,8 @@ DROP TABLE IF EXISTS public.reviews CASCADE;
 
 CREATE TABLE public.shops (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    login VARCHAR(30) NOT NULL UNIQUE
+    name VARCHAR(256) NOT NULL,
+    login VARCHAR(256) NOT NULL UNIQUE
 );
 
 CREATE TABLE public.shop_credentials (
@@ -22,8 +22,8 @@ CREATE TABLE public.shop_credentials (
 
 CREATE TABLE public.users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL,
-    login VARCHAR (30) NOT NULL UNIQUE,
+    name VARCHAR(256) NOT NULL,
+    login VARCHAR (256) NOT NULL UNIQUE,
     balance DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (balance >= 0)
 );
 
