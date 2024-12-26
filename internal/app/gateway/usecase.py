@@ -41,6 +41,10 @@ class GatewayUseCase:
             f"http://authorization:{self.__authorization_port}/logout", headers={'Authorization': auth_header})
         return response.status_code, response.json()
 
+    def register(self, payload: dict):
+        response = requests.post(f"http://authorization:{self.__authorization_port}/register", json=payload)
+        return response.status_code, response.json()
+
     def deposit(self, money: int, auth_header: str):
         response_data = self.__authorization(auth_header)
 

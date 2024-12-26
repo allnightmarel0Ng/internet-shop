@@ -26,6 +26,16 @@ class UserRepository:
         WHERE id = :id;
         """
 
+    __REGISTER_USER_SQL = """
+        CALL register_user(:name, :login, :password_hash);
+        """
+
+    __CHECK_IF_USER_REGISTERED_SQL = """
+        SELECT id
+        FROM public.users
+        WHERE login = :login;
+        """
+
     def __init__(self, db: Database):
         self.__db = db
 
@@ -50,6 +60,15 @@ class UserRepository:
             self.__GET_PROFILE_BY_ID_SQL,
             {"id": user_id})
         return self.__map_to_user(result)
+
+    def register(self, name, login, password_hash):
+        self.__db.transaction([(self.__REGISTER_USER_SQL,
+                                {'name': name,
+                                 'login': login,
+                                 'password_hash': password_hash})])
+
+    def check_registered(self, login) -> bool:
+        return len(self.__db.query(self.__CHECK_IF_USER_REGISTERED_SQL, {'login': login})) > 0
 
 
 class ShopRepository:

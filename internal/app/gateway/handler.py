@@ -2,6 +2,7 @@ from fastapi import Header, Body, HTTPException, APIRouter, status
 from pydantic import BaseModel
 
 from internal.app.gateway.usecase import GatewayUseCase
+from internal.app.authorization.handler import RegisterForm
 
 
 class DepositRequest(BaseModel):
@@ -24,6 +25,7 @@ class GatewayHandler:
         self.router = APIRouter()
         self.router.add_api_route("/api/login", self.login, methods=["GET"])
         self.router.add_api_route("/api/logout", self.logout, methods=["POST"])
+        self.router.add_api_route("/api/register", self.register, methods=["POST"])
         self.router.add_api_route(
             "/api/deposit", self.deposit, methods=["POST"])
         self.router.add_api_route("/api/buy", self.buy, methods=["POST"])
@@ -48,6 +50,12 @@ class GatewayHandler:
 
     async def logout(self, authorization: str = Header(None)):
         code, body = self.__use_case.logout(authorization)
+        if code != status.HTTP_200_OK:
+            raise HTTPException(status_code=code, detail=body['detail'])
+        return 'success'
+
+    async def register(self, form: RegisterForm):
+        code, body = self.__use_case.register(form.__dict__)
         if code != status.HTTP_200_OK:
             raise HTTPException(status_code=code, detail=body['detail'])
         return 'success'

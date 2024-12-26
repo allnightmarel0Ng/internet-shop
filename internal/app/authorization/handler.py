@@ -1,7 +1,14 @@
 from fastapi import Header, HTTPException, status, APIRouter
+from pydantic import BaseModel
 
 from internal.app.authorization.usecase import AuthorizationUseCase
 from internal.infrastructure.postgres import NotFoundError, MultipleResultsFoundError
+
+
+class RegisterForm(BaseModel):
+    name: str
+    login: str
+    password: str
 
 
 class AuthorizationHandler:
@@ -14,6 +21,8 @@ class AuthorizationHandler:
             "/authorization", self.authorization, methods=["GET"])
         self.router.add_api_route(
             "/logout", self.logout, methods=["POST"])
+        self.router.add_api_route(
+            "/register", self.register, methods=["POST"])
 
     async def authentication(self, authorization: str = Header(None)):
         if not authorization or authorization.count('Basic ') < 1:
@@ -46,3 +55,6 @@ class AuthorizationHandler:
 
         json_web_token = authorization.replace('Bearer ', '')
         self.__use_case.logout_entity(json_web_token)
+
+    async def register(self, form: RegisterForm):
+        return self.__use_case.register_user(form.name, form.login, form.password)

@@ -49,3 +49,17 @@ BEGIN
     WHERE id = p_user_id;
 END;
 $$ LANGUAGE PLPGSQL;
+
+CREATE OR REPLACE PROCEDURE register_user(p_name VARCHAR(50), p_login VARCHAR(30), p_password_hash VARCHAR(70))
+AS $$
+DECLARE
+    d_user_id INT;
+BEGIN
+    INSERT INTO public.users (name, login)
+    VALUES (p_name, p_login)
+    RETURNING id INTO d_user_id;
+
+    INSERT INTO public.user_credentials (user_id, password_hash)
+    VALUES (d_user_id, p_password_hash);
+END;
+$$ LANGUAGE PLPGSQL;

@@ -30,19 +30,19 @@ class AuthorizationUseCase:
         password = tokens[2]
 
         if entity_type == "shop":
-            id, hash = self.__repository.authenticate_shop(login)
+            entity_id, password_hash = self.__repository.authenticate_shop(login)
         elif entity_type == "user":
-            id, hash = self.__repository.authenticate_user(login)
+            entity_id, password_hash = self.__repository.authenticate_user(login)
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail='invalid entity type')
 
-        if not bcrypt.checkpw(password.encode(), hash.encode()):
+        if not bcrypt.checkpw(password.encode(), password_hash.encode()):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail='password mismatch')
 
         entity = {
-            'id': id,
+            'id': entity_id,
             'type': entity_type
         }
 
@@ -56,15 +56,23 @@ class AuthorizationUseCase:
         return json_web_token
 
     def authorize_entity(self, json_web_token: str) -> tuple[int, str]:
-        if self.__repository.check_jwt_in_redis(json_web_token) == False:
+        if not self.__repository.check_jwt_in_redis(json_web_token):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail='could not find jwt')
 
         decoded = jwt.decode(
             json_web_token, key=self.__jwt_secret_key, algorithms=["HS256"])
-        return (decoded['id'], decoded['type'])
+        return decoded['id'], decoded['type']
 
     def logout_entity(self, json_web_token: str):
-        if self.__repository.delete_jwt_from_redis(json_web_token) == 0:
+        if not self.__repository.delete_jwt_from_redis(json_web_token):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail='could not find jwt')
+
+    def register_user(self, name: str, login: str, password: str):
+        if self.__repository.check_registered_user(login):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='user already registered')
+
+        salt = bcrypt.gensalt()
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+        self.__repository.register_user(name, login, password_hash)

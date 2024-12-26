@@ -24,7 +24,7 @@ CREATE TABLE public.users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     login VARCHAR (30) NOT NULL UNIQUE,
-    balance DECIMAL(10, 2) NOT NULL CHECK (balance > 0)
+    balance DECIMAL(10, 2) NOT NULL DEFAULT 0 CHECK (balance >= 0)
 );
 
 CREATE TABLE public.user_credentials (

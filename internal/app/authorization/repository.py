@@ -23,3 +23,9 @@ class AuthorizationRepository:
 
     def delete_jwt_from_redis(self, jwt: str):
         return self.__redis.delete([jwt])
+
+    def register_user(self, name: str, login: str, password_hash: str):
+        return self.__user_repository.register(name, login, password_hash)
+
+    def check_registered_user(self, login: str) -> bool:
+        return self.__user_repository.check_registered(login)
