@@ -115,7 +115,8 @@ class ShopRepository:
         return self.__map_to_shop(result)
 
     def search_shops(self, query: str):
-        rows = self.__db.query(self.__SEARCH_SHOPS_SQL, {"query": f"%{query}%"})
+        rows = self.__db.query(self.__SEARCH_SHOPS_SQL,
+                               {"query": f"%{query}%"})
         return [self.__map_to_shop(row) for row in rows]
 
 # seems useless ...
