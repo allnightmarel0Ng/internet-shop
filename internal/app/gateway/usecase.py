@@ -48,14 +48,35 @@ class GatewayUseCase:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail='shops cant deposit any money')
 
-        msg_dict: dict = {
+        msg = {
             'type': 'deposit',
             'userID': response_data['id'],
             'diff': money
         }
 
-        self.__producer.produce('money_operations', json.dumps(msg_dict))
-        return status.HTTP_200_OK, 'success'
+        self.__producer.produce('money_operations', json.dumps(msg))
+        return 'success'
+
+    def buy(self, auth_header: str):
+        response_data = self.__authorization(auth_header)
+
+        if response_data['type'] != 'user':
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='shops cant buy anything')
+
+        profile = self.__fetch_get(
+            f"http://profile:{self.__profile_port}/user/{response_data['id']}")
+        if profile['data']['balance'] < profile['total_cart_price']:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='not enough money on balance')
+
+        msg = {
+            'type': 'buy',
+            'userID': response_data['id']
+        }
+
+        self.__producer.produce('money_operations', json.dumps(msg))
+        return 'success'
 
     def profile_self(self, auth_header: str):
         response_data = self.__authorization(auth_header)

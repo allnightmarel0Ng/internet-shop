@@ -26,6 +26,7 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:${KAFKA_PORT},PLAINTEXT_INTERNAL://kafka:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     healthcheck:
@@ -33,24 +34,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  init-kafka:
-    image: confluentinc/cp-kafka:7.4.0
-    depends_on:
-      kafka:
-        condition: service_healthy
-    entrypoint: [ "/bin/sh", "-c" ]
-    command: |
-      "
-      # blocks until kafka is reachable
-      kafka-topics --bootstrap-server kafka:29092 --list
-      
-      echo -e 'Creating kafka topics'
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic money_operations --replication-factor 1 --partitions 1
-      
-      echo -e 'Successfully created the following topics:'
-      kafka-topics --bootstrap-server kafka:29092 --list
-      "
   
   postgres:
     build:
@@ -97,6 +80,7 @@ services:
       "
       psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /migrations/ddl.sql
       psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /migrations/dml.sql
+      psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f /migrations/dal.sql
       "
     
   authorization:

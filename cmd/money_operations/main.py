@@ -1,6 +1,5 @@
 from internal.config import *
 from internal.infrastructure.postgres import Database
-from internal.infrastructure.kafka import wait_for_topic
 
 from internal.app.money_operations.handler import *
 
@@ -13,10 +12,10 @@ if __name__ == '__main__':
         f"postgresql://{config.POSTGRES_USER}:{config.POSTGRES_PASSWORD}@postgres:{config.POSTGRES_PORT}/{config.POSTGRES_DB}")
 
     user_repository = UserRepository(db)
-    repository = MoneyOperationsRepository(user_repository)
+    shopping_cart_repository = ShoppingCartRepository(db)
+    repository = MoneyOperationsRepository(
+        user_repository, shopping_cart_repository)
     use_case = MoneyOperationsUseCase(repository)
-
-    wait_for_topic(f"kafka:{config.KAFKA_PORT}", 'money_operations')
 
     consumer = Consumer(f"kafka:{config.KAFKA_PORT}", 'group')
     consumer.subscribe(['money_operations'])

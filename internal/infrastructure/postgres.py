@@ -27,21 +27,9 @@ class Database:
     def query(self, query: str, params: dict = None) -> list:
         try:
             with self.engine.connect() as connection:
-                print('here!!!')
                 result = connection.execute(text(query), params)
-                print('here!!')
                 return [row._asdict() for row in result]
-        except SQLAlchemyError as e:
-            print(str(e))
-            raise DatabaseError
-
-    def execute_in_transaction(self, queries: list) -> bool:
-        try:
-            with self.engine.begin() as connection:
-                for query in queries:
-                    connection.execute(text(query))
-            return True
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             raise DatabaseError
 
     def query_row(self, query: str, params: dict = None) -> dict:
@@ -60,6 +48,18 @@ class Database:
                 return result.rowcount
         except SQLAlchemyError:
             raise DatabaseError
+
+    def transaction(self, queries: list, level: str = None):
+        try:
+            with self.engine.connect() as connection:
+                if level:
+                    connection.execution_options(isolation_level=level)
+
+                with connection.begin():
+                    for query, params in queries:
+                        connection.execute(text(query), params)
+        except SQLAlchemyError:
+            raise DatabaseError("Transaction failed.")
 
     def close(self):
         self.engine.dispose()

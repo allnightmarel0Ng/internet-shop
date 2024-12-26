@@ -41,9 +41,9 @@ class UserRepository:
         return result['id'], result['password_hash']
 
     def change_balance(self, user_id: int, diff: int):
-        self.__db.execute(
-            self.__CHANGE_BALANCE_SQL,
-            {"diff": diff, "user_id": user_id})
+        self.__db.transaction(
+            [(self.__CHANGE_BALANCE_SQL,
+              {"diff": diff, "user_id": user_id})], level="SERIALIZABLE")
 
     def get_profile_by_id(self, user_id: int) -> User:
         result = self.__db.query_row(
@@ -183,7 +183,7 @@ class PaycheckRepository:
 
     __SELECT_BOUGHT_PRODUCT_SQL = """
         SELECT
-            p.user_id
+            p.user_id,
             pi.product_id
         FROM public.paycheck_items AS pi
         LEFT JOIN public.paychecks AS p ON p.id = pi.paycheck_id
@@ -246,21 +246,34 @@ class ShoppingCartRepository:
         WHERE sc.user_id = :user_id
         """
 
-    __DROP_USERS_PRODUCT_CART_SQL = """
-        DELETE FROM public.shopping_carts
+    __GET_CART_TOTAL_PRICE = """
+        SELECT COALESCE(SUM(p.price), 0) AS sum
+        FROM public.products AS p
+        JOIN public.shopping_carts AS sc ON sc.product_id = p.id
+        WHERE sc.user_id = :id
+        GROUP BY sc.user_id;
+        """
+
+    __GET_CART_SIZE_SQL = """
+        SELECT COUNT(*) AS size
+        FROM public.shopping_carts
         WHERE user_id = :user_id;
+        """
+
+    __BUY_CART_SQL = """
+        CALL buy_cart(:user_id);
         """
 
     def __init__(self, db: Database):
         self.__db = db
 
     def add_product_to_cart(self, user_id: int, product_id: int):
-        self.__db.execute(self.__ADD_PRODUCT_TO_CART_SQL, {
-            "user_id": user_id, "product_id": product_id})
+        self.__db.transaction([(self.__ADD_PRODUCT_TO_CART_SQL, {
+            "user_id": user_id, "product_id": product_id})], level="SERIALIZABLE")
 
     def drop_product_from_users_cart(self, user_id: int, product_id: int):
-        self.__db.execute(self.__DROP_PRODUCT_FROM_USERS_CART_SQL, {
-            "user_id": user_id, "product_id": product_id})
+        self.__db.transaction([(self.__DROP_PRODUCT_FROM_USERS_CART_SQL, {
+            "user_id": user_id, "product_id": product_id})], level="SERIALIZABLE")
 
     def get_users_products(self, user_id: int) -> list[Product]:
         result: list[Product] = []
@@ -272,9 +285,18 @@ class ShoppingCartRepository:
 
         return result
 
-    def drop_users_product_cart(self, user_id: int):
-        self.__db.query(self.__DROP_USERS_PRODUCT_CART_SQL,
-                        {"user_id": user_id})
+    def buy_cart(self, user_id: int):
+        self.__db.transaction(
+            [(self.__BUY_CART_SQL, {"user_id": user_id})], level="SERIALIZABLE")
+
+    def get_shopping_cart_size(self, user_id) -> int:
+        return self.__db.query_row(self.__GET_CART_SIZE_SQL, {"user_id": user_id})['size']
+
+    def get_shopping_cart_price(self, user_id) -> int:
+        rows = self.__db.query(self.__GET_CART_TOTAL_PRICE, {"id": user_id})
+        if len(rows) != 1:
+            return 0
+        return rows[0]['sum']
 
 
 class ReviewRepository:
@@ -314,6 +336,12 @@ class ReviewRepository:
         ORDER BY creation_time DESC;
         """
 
+    __CHECK_IF_REVIEWED_SQL = """
+        SELECT id
+        FROM public.reviews
+        WHERE user_id = :user_id AND product_id = :product_id;
+        """
+
     __GET_PRODUCT_STATS_SQL = """
         SELECT
             COUNT(*) AS review_count,
@@ -335,13 +363,13 @@ class ReviewRepository:
     def __init__(self, db: Database):
         self.__db = db
 
-    def create_review(self, user_id: int, product_id: int, rate: float, text: str):
-        self.__db.execute(self.__INSERT_REVIEW_SQL,
-                          {"user_id": user_id, "product_id": product_id, "rate": rate, "text": text})
+    def create_review(self, user_id: int, product_id: int, rate: float, review_text: str):
+        self.__db.transaction([(self.__INSERT_REVIEW_SQL,
+                                {"user_id": user_id, "product_id": product_id, "rate": rate, "text": review_text})], level="SERIALIZABLE")
 
     def delete_review(self, user_id: int, product_id: int):
-        self.__db.execute(self.__DELETE_REVIEW_SQL, {
-                          "user_id": user_id, "product_id": product_id})
+        self.__db.transaction([self.__DELETE_REVIEW_SQL, {
+            "user_id": user_id, "product_id": product_id}], level="SERIALIZABLE")
 
     @staticmethod
     def __map_to_review(query_result):
@@ -365,21 +393,24 @@ class ReviewRepository:
         return self.__get_review(product_id, self.__GET_PRODUCT_REVIEWS_SQL)
 
     def get_product_stats(self, product_id: int) -> tuple[int, float]:
-        try:
-            row = self.__db.query_row(
-                self.__GET_PRODUCT_STATS_SQL, {'id': product_id})
-            return int(row['review_count']) if (type(row['review_count'])) is not None else 0, float(row['avg_rate']) if type(row['avg_rate']) is not None else 0.0
-        except (NotFoundError, MultipleResultsFoundError):
+        rows = self.__db.query(
+            self.__GET_PRODUCT_STATS_SQL, {'id': product_id})
+        if len(rows) != 1:
             return 0, 0
+        row = rows[0]
+        return int(row['review_count']) if (type(row['review_count'])) is not None else 0, float(row['avg_rate']) if type(row['avg_rate']) is not None else 0.0
 
     def get_user_reviews(self, user_id: int) -> list[Review]:
         return self.__get_review(user_id, self.__GET_USER_REVIEWS_SQL)
 
     def get_user_stats(self, user_id: int) -> tuple[int, float]:
-        try:
-            row = self.__db.query_row(
-                self.__GET_USER_STATS_SQL, {'id': user_id})
-            return int(row['review_count']) if (type(row['review_count'])) is not None else 0, float(
-                row['avg_rate']) if type(row['avg_rate']) is not None else 0.0
-        except (NotFoundError, MultipleResultsFoundError):
+        rows = self.__db.query(
+            self.__GET_USER_STATS_SQL, {'id': user_id})
+        if len(rows) != 1:
             return 0, 0
+        row = rows[0]
+        return int(row['review_count']) if (type(row['review_count'])) is not None else 0, float(
+            row['avg_rate']) if type(row['avg_rate']) is not None else 0.0
+
+    def check_if_reviewed(self, user_id: int, product_id: int) -> bool:
+        return len(self.__db.query(self.__CHECK_IF_REVIEWED_SQL, {'user_id': user_id, 'product_id': product_id})) > 0

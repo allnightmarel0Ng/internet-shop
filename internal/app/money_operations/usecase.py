@@ -9,3 +9,6 @@ class MoneyOperationsUseCase:
 
     def add_money_to_user(self, user_id: int, to_add: int):
         self.__repository.deposit(user_id, to_add)
+
+    def buy_cart(self, user_id: int):
+        self.__repository.buy_cart(user_id)

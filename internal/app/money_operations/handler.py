@@ -15,6 +15,12 @@ class MoneyOperationsHandler:
         self.__use_case.add_money_to_user(
             user_id=data['userID'], to_add=data['diff'])
 
+    def buy(self, data: dict):
+        if 'userID' not in data:
+            return
+
+        self.__use_case.buy_cart(user_id=data['userID'])
+
     def fork_messages(self, msg: str):
         data = json.loads(msg)
         if 'type' not in data:
@@ -22,6 +28,8 @@ class MoneyOperationsHandler:
 
         if data['type'] == 'deposit':
             self.deposit(data)
+        elif data['type'] == 'buy':
+            self.buy(data)
 
     def consume(self):
         consume_messages(self.__consumer, self.fork_messages, print, print)

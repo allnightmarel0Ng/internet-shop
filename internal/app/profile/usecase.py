@@ -37,7 +37,7 @@ class ProfileUseCase:
                 }
                 return response
             elif profile_type == ProfileType.USER:
-                profile, cart, paychecks, reviews, stats = self.__repository.get_user_profile(
+                profile, cart, price, paychecks, reviews, stats = self.__repository.get_user_profile(
                     entity_id)
                 print(profile, cart, paychecks, reviews)
                 response = {
@@ -48,6 +48,7 @@ class ProfileUseCase:
                 }
                 if is_public_boolean is False:
                     response["cart"] = [item.__dict__ for item in cart]
+                    response["total_cart_price"] = price
                     response["paychecks"] = [
                         {"common": item[0], "products": item[1]} for item in paychecks]
                 return response

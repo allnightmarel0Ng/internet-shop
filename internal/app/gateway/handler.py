@@ -26,6 +26,7 @@ class GatewayHandler:
         self.router.add_api_route("/api/logout", self.logout, methods=["POST"])
         self.router.add_api_route(
             "/api/deposit", self.deposit, methods=["POST"])
+        self.router.add_api_route("/api/buy", self.buy, methods=["POST"])
         self.router.add_api_route(
             "/api/profile/{entity_type}/{entity_id}", self.profile_other, methods=["GET"])
         self.router.add_api_route(
@@ -49,16 +50,18 @@ class GatewayHandler:
         code, body = self.__use_case.logout(authorization)
         if code != status.HTTP_200_OK:
             raise HTTPException(status_code=code, detail=body['detail'])
+        return 'success'
 
     async def deposit(self, body: DepositRequest, authorization: str = Header(None)):
         if body.money <= 0:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail='unable to deposit non positive amount of money')
 
-        code, detail = self.__use_case.deposit(
+        return self.__use_case.deposit(
             body.money, auth_header=authorization)
-        if code != status.HTTP_200_OK:
-            raise HTTPException(status_code=code, detail=detail['detail'])
+
+    async def buy(self, authorization: str = Header(None)):
+        return self.__use_case.buy(authorization)
 
     async def profile_self(self, authorization: str = Header(None)):
         return self.__use_case.profile_self(auth_header=authorization)

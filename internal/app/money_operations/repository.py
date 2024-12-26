@@ -1,15 +1,20 @@
-from internal.domain.repository import UserRepository
+from internal.domain.repository import UserRepository, ShoppingCartRepository
 
 
 class MoneyOperationsRepository:
-    def __init__(self, user_repository: UserRepository):
+    def __init__(self, user_repository: UserRepository, shopping_cart_repository: ShoppingCartRepository):
         self.__user_repository = user_repository
         # self.__paycheck_repository = paycheck_repository
-        # self.__shopping_cart_repository = shopping_cart_repository
+        self.__shopping_cart_repository = shopping_cart_repository
         # self.__product_repository = product_repository
 
     def deposit(self, user_id: int, to_add: int):
         self.__user_repository.change_balance(user_id, to_add)
+
+    def buy_cart(self, user_id: int):
+        if not self.__shopping_cart_repository.get_shopping_cart_size(user_id):
+            return
+        self.__shopping_cart_repository.buy_cart(user_id)
 
     # def buy_shopping_cart(self, user: User):
     #     # todo: transaction
