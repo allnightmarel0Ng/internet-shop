@@ -88,6 +88,11 @@ class ShopRepository:
         WHERE id = :id;
         """
 
+    __SEARCH_SHOPS_SQL = """
+        SELECT id, name
+        FROM public.shops
+        WHERE name ILIKE :query
+        """
     def __init__(self, db: Database):
         self.__db = db
 
@@ -155,6 +160,12 @@ class ProductRepository:
         WHERE p.shop_id = :id;
         """
 
+    __SEARCH_PRODUCTS_SQL = """
+        SELECT id AS product_id, category_id, shop_id, name AS product_name, price AS product_price
+        FROM public.products
+        WHERE name ILIKE :query
+        """
+
     def __init__(self, db: Database):
         self.__db = db
 
@@ -179,6 +190,12 @@ class ProductRepository:
             result.append(self.map_to_product(row))
 
         return result
+
+    def search_products(self, query: str) -> list[Product]:
+        results = self.__db.query(self.__SEARCH_PRODUCTS_SQL, {"query": f"%{query}%"})
+        return [
+            self.map_to_product(row) for row in results
+        ]
 
 
 class PaycheckRepository:
