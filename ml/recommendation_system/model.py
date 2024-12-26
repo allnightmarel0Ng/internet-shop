@@ -15,16 +15,25 @@ class RecommendationSystem:
         self.trainset = None
         self.testset = None
 
+    def normalize_ratings(self):
+        """
+        Normalizes the ratings to a 0-1 scale.
+        """
+        min_rating = self.data['rating'].min()
+        max_rating = self.data['rating'].max()
+        self.data['normalized_rating'] = (self.data['rating'] - min_rating) / (max_rating - min_rating)
+
     def load_data(self):
         """
         Prepares the data for training.
         """
-        reader = Reader(rating_scale=(self.data['rating'].min(), self.data['rating'].max()))
+        self.normalize_ratings()
+        reader = Reader(rating_scale=(0, 1))
         surprise_data = Dataset.load_from_df(
-            self.data[['user_id', 'item_id', 'rating']], reader
+            self.data[['user_id', 'item_id', 'normalized_rating']], reader
         )
         self.trainset, self.testset = train_test_split(surprise_data, test_size=0.25, random_state=42)
-        print("Data loaded and split into train and test sets.")
+        print("Data loaded, normalized, and split into train and test sets.")
 
     def train_model(self):
         """
@@ -37,6 +46,9 @@ class RecommendationSystem:
     def get_metrics(self):
         """
         Computes evaluation metrics for the model.
+
+        Returns:
+            dict: A dictionary containing RMSE and MAE values.
         """
         if not self.model or not self.testset:
             raise ValueError("Model or test set not found. Train the model and load data first.")
@@ -54,27 +66,20 @@ class RecommendationSystem:
         print(f"Evaluation Metrics:\nRMSE: {metrics['RMSE']}\nMAE: {metrics['MAE']}")
         return metrics
 
-    def recommend_items(self, user_id, top_n=10):
+    def recommend_items(self, user_id, user_rated_items, top_n=10):
         """
-        Recommends top N items for a given user.
+        Recommends top N items for a given user based on the provided list of user-rated items.
+
+        Args:
+            user_id (int): The ID of the user for whom recommendations are generated.
+            user_rated_items (list): A list of item IDs already rated by the user.
+            top_n (int): The number of recommendations to generate. Default is 10.
 
         Returns:
             list: List of recommended item IDs.
         """
         if not self.model:
             self.load_model("recommender_model.pkl")
-
-        user_rated_items = self.data[self.data['user_id'] == user_id]['item_id'].tolist()
-
-        if not user_rated_items:
-            popular_items = (
-                self.data.groupby('item_id')['rating']
-                .count()
-                .sort_values(ascending=False)
-                .head(top_n)
-                .index.tolist()
-            )
-            return popular_items
 
         all_items = self.data['item_id'].unique()
         items_to_predict = [item for item in all_items if item not in user_rated_items]
@@ -110,4 +115,3 @@ class RecommendationSystem:
         with open(file_path, 'rb') as file:
             self.model = pickle.load(file)
         print(f"Model loaded from {file_path}.")
-
