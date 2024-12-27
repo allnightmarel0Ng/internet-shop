@@ -4,6 +4,7 @@ from surprise.model_selection import train_test_split
 from surprise.accuracy import rmse, mae
 import pickle
 
+
 class RecommendationSystem:
     def __init__(self, data: pd.DataFrame):
         """
@@ -21,7 +22,8 @@ class RecommendationSystem:
         """
         min_rating = self.data['rating'].min()
         max_rating = self.data['rating'].max()
-        self.data['normalized_rating'] = (self.data['rating'] - min_rating) / (max_rating - min_rating)
+        self.data['normalized_rating'] = (
+            self.data['rating'] - min_rating) / (max_rating - min_rating)
 
     def load_data(self):
         """
@@ -32,8 +34,10 @@ class RecommendationSystem:
         surprise_data = Dataset.load_from_df(
             self.data[['user_id', 'item_id', 'normalized_rating']], reader
         )
-        self.trainset, self.testset = train_test_split(surprise_data, test_size=0.25, random_state=42)
+        self.trainset, self.testset = train_test_split(
+            surprise_data, test_size=0.25, random_state=42)
         print("Data loaded, normalized, and split into train and test sets.")
+        return self
 
     def train_model(self):
         """
@@ -42,6 +46,7 @@ class RecommendationSystem:
         self.model = SVD(random_state=42)
         self.model.fit(self.trainset)
         print("Model trained using SVD.")
+        return self
 
     def get_metrics(self):
         """
@@ -51,7 +56,8 @@ class RecommendationSystem:
             dict: A dictionary containing RMSE and MAE values.
         """
         if not self.model or not self.testset:
-            raise ValueError("Model or test set not found. Train the model and load data first.")
+            raise ValueError(
+                "Model or test set not found. Train the model and load data first.")
 
         predictions = self.model.test(self.testset)
         rmse_error = rmse(predictions, verbose=False)
@@ -63,7 +69,8 @@ class RecommendationSystem:
         Evaluates the trained model and prints metrics.
         """
         metrics = self.get_metrics()
-        print(f"Evaluation Metrics:\nRMSE: {metrics['RMSE']}\nMAE: {metrics['MAE']}")
+        print(
+            f"Evaluation Metrics:\nRMSE: {metrics['RMSE']}\nMAE: {metrics['MAE']}")
         return metrics
 
     def recommend_items(self, user_id, user_rated_items, top_n=10):
@@ -82,14 +89,16 @@ class RecommendationSystem:
             self.load_model("recommender_model.pkl")
 
         all_items = self.data['item_id'].unique()
-        items_to_predict = [item for item in all_items if item not in user_rated_items]
+        items_to_predict = [
+            item for item in all_items if item not in user_rated_items]
 
         predictions = [
             (item, self.model.predict(user_id, item).est)
             for item in items_to_predict
         ]
 
-        recommendations = sorted(predictions, key=lambda x: x[1], reverse=True)[:top_n]
+        recommendations = sorted(
+            predictions, key=lambda x: x[1], reverse=True)[:top_n]
         return [item for item, _ in recommendations]
 
     def save_model(self, file_path):

@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS public.users CASCADE;
 DROP TABLE IF EXISTS public.categories CASCADE;
 DROP TABLE IF EXISTS public.products CASCADE;
 DROP TABLE IF EXISTS public.paychecks CASCADE;
+DROP TABLE IF EXISTS public.paycheck_items CASCADE;
 DROP TABLE IF EXISTS public.shopping_carts CASCADE;
 DROP TABLE IF EXISTS public.reviews CASCADE;
 

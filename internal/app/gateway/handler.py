@@ -52,6 +52,9 @@ class GatewayHandler:
         self.router.add_api_route(
             "/api/search", self.search, methods=["POST"])
 
+        self.router.add_api_route(
+            "/api/recommendations/{count}", self.recommendations, methods=["GET"])
+
     async def login(self, authorization: str = Header(None)):
         code, data = self.__use_case.authentication(authorization)
         if code != status.HTTP_200_OK:
@@ -106,3 +109,6 @@ class GatewayHandler:
         if code != status.HTTP_200_OK:
             raise HTTPException(status_code=code, detail=result['detail'])
         return result
+
+    async def recommendations(self, count: int, authorization: str = Header(None)):
+        return self.__use_case.recommend(authorization, count)

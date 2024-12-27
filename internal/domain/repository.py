@@ -26,8 +26,20 @@ class UserRepository:
         WHERE id = :id;
         """
 
-    __REGISTER_USER_SQL = """
-        CALL register_user(:name, :login, :password_hash);
+    __REGISTER_USER_PART1_SQL = """
+        INSERT INTO public.users (name, login)
+        VALUES (:name, :login)
+        RETURNING id;
+        """
+
+    __REGISTER_USER_PART2_SQL = """
+        INSERT INTO public.user_credentials (user_id, password_hash)
+        VALUES (:user_id, :password_hash);
+        """
+
+    __MAX_USER_ID_SQL = """
+        SELECT MAX(id) AS id
+        FROM users;
         """
 
     __CHECK_IF_USER_REGISTERED_SQL = """
@@ -62,10 +74,11 @@ class UserRepository:
         return self.__map_to_user(result)
 
     def register(self, name, login, password_hash):
-        self.__db.transaction([(self.__REGISTER_USER_SQL,
-                                {'name': name,
-                                 'login': login,
-                                 'password_hash': password_hash})])
+        row = self.__db.query_row(self.__MAX_USER_ID_SQL)
+        self.__db.execute(self.__REGISTER_USER_PART1_SQL,
+                          {'name': name, 'login': login})
+        self.__db.execute(self.__REGISTER_USER_PART2_SQL, {
+                          'user_id': row['id']+1, 'password_hash': password_hash})
 
     def check_registered(self, login) -> bool:
         return len(self.__db.query(self.__CHECK_IF_USER_REGISTERED_SQL, {'login': login})) > 0
@@ -172,6 +185,32 @@ class ProductRepository:
         WHERE name ILIKE :query
         """
 
+    __SELECT_MOST_POPULAR_PRODUCTS_SQL = """
+        SELECT
+            p.id AS product_id,
+            p.category_id AS category_id,
+            p.shop_id AS shop_id,
+            p.name AS product_name,
+            p.price AS product_price,
+            COUNT(r.id) AS review_count
+        FROM public.products p
+        LEFT JOIN public.reviews AS r ON p.id = r.product_id
+        GROUP BY p.id, p.category_id, p.shop_id, p.name, p.price
+        ORDER BY review_count DESC
+        LIMIT :N;
+        """
+
+    __SELECT_PRODUCTS_BY_IDS_SQL = """
+        SELECT
+            id AS product_id,
+            category_id AS category_id,
+            shop_id AS shop_id,
+            name AS product_name,
+            price AS product_price
+        FROM public.products AS p
+        WHERE id IN {in_part};
+        """
+
     def __init__(self, db: Database):
         self.__db = db
 
@@ -203,6 +242,21 @@ class ProductRepository:
         return [
             self.map_to_product(row) for row in results
         ]
+
+    def select_n_most_popular(self, n: int) -> list[Product]:
+        return [self.map_to_product(row) for row in self.__db.query(self.__SELECT_MOST_POPULAR_PRODUCTS_SQL, {"N": n})]
+
+    def get_products_by_ids(self, ids: list[int]) -> list[Product]:
+        in_part = '('
+        for i in range(len(ids)):
+            in_part += str(ids[i])
+            if i != len(ids) - 1:
+                in_part += ', '
+        in_part += ')'
+
+        rows = self.__db.query(
+            self.__SELECT_PRODUCTS_BY_IDS_SQL.format(in_part=in_part))
+        return [self.map_to_product(row) for row in rows]
 
 
 class PaycheckRepository:

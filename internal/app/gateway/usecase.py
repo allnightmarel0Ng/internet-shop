@@ -12,13 +12,14 @@ from internal.protos.review_management.review_management_pb2_grpc import ReviewM
 
 
 class GatewayUseCase:
-    def __init__(self, producer: Producer, authorization_port: str, profile_port: str, order_management_port: str, review_management_port: str, search_port: str):
+    def __init__(self, producer: Producer, authorization_port: str, profile_port: str, order_management_port: str, review_management_port: str, search_port: str, recommendation_system_port: str):
         self.__producer = producer
         self.__authorization_port = authorization_port
         self.__profile_port = profile_port
         self.__order_management_port = order_management_port
         self.__review_management_port = review_management_port
         self.__search_port = search_port
+        self.__recommendation_system_port = recommendation_system_port
 
     @staticmethod
     def __fetch_get(url, headers=None):
@@ -154,3 +155,15 @@ class GatewayUseCase:
         response = requests.post(
             f"http://search:{self.__search_port}/search", json=payload)
         return response.status_code, response.json()
+
+    def recommend(self, auth_header: str, count: int):
+        if not auth_header:
+            return self.__fetch_get(
+                f"http://recommendation_system:{self.__recommendation_system_port}/predict/0?count={count}")
+
+        auth_data = self.__authorization(auth_header)
+        if auth_data['type'] != 'user':
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='cant recommend anything for shops')
+
+        return self.__fetch_get(f"http://recommendation_system:{self.__recommendation_system_port}/predict/{auth_data['id']}?count={count}")

@@ -17,7 +17,8 @@ class Config:
                  gateway_port: str,
                  order_management_port: str,
                  review_management_port: str,
-                 search_port: str):
+                 search_port: str,
+                 recommendation_system_port: str):
         self.POSTGRES_PORT = postgres_port
         self.POSTGRES_DB = postgres_db
         self.POSTGRES_USER = postgres_user
@@ -32,6 +33,7 @@ class Config:
         self.ORDER_MANAGEMENT_PORT = order_management_port
         self.REVIEW_MANAGEMENT_PORT = review_management_port
         self.SEARCH_PORT = search_port
+        self.RECOMMENDATION_SYSTEM_PORT = recommendation_system_port
 
 
 def load_config() -> Config:
@@ -49,4 +51,5 @@ def load_config() -> Config:
                   gateway_port=os.getenv("GATEWAY_PORT"),
                   order_management_port=os.getenv("ORDER_MANAGEMENT_PORT"),
                   review_management_port=os.getenv("REVIEW_MANAGEMENT_PORT"),
-                  search_port=os.getenv("SEARCH_PORT"))
+                  search_port=os.getenv("SEARCH_PORT"),
+                  recommendation_system_port=os.getenv("RECOMMENDATION_SYSTEM_PORT"))

@@ -51,7 +51,7 @@ mdurl==0.1.2
 more-itertools==9.1.0
 msgpack==1.0.5
 mypy-extensions==1.0.0
-numpy==2.2.1
+numpy<2
 packaging==23.0
 pandas==2.2.3
 pexpect==4.8.0
