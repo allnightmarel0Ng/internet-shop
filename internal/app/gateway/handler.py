@@ -54,6 +54,7 @@ class GatewayHandler:
 
         self.router.add_api_route(
             "/api/recommendations/{count}", self.recommendations, methods=["GET"])
+        # self.router.add_api_route("/api/optimal_price", self.optimal_price, methods=["GET"])
 
     async def login(self, authorization: str = Header(None)):
         code, data = self.__use_case.authentication(authorization)
@@ -112,3 +113,6 @@ class GatewayHandler:
 
     async def recommendations(self, count: int, authorization: str = Header(None)):
         return self.__use_case.recommend(authorization, count)
+
+    # async def optimal_price(self, authorization: str = Header(None)):
+    #     return self.__use_case.optimal_price(authorization)

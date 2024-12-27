@@ -9,8 +9,13 @@ class RecommendationSystemHandler:
         self.router = APIRouter()
 
         self.router.add_api_route(
-            "/predict/{user_id}", self.predict, methods=["GET"])
+            "/recommend/{user_id}", self.recommend, methods=["GET"])
+        # self.router.add_api_route(
+        #     "/optimal_price/{shop_id}", self.optimal_price, methods=["GET"])
 
-    async def predict(self, user_id: int, count: str = None):
+    async def recommend(self, user_id: int, count: str = None):
         count = int(count) if count is not None else 10
-        return self.__use_case.predict(user_id, count)
+        return self.__use_case.recommend_products(user_id, count)
+
+    # async def optimal_price(self, shop_id: int):
+    #     return self.__use_case.get_optimal_prices(shop_id)

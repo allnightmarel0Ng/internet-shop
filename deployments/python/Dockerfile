@@ -1,12 +1,17 @@
-FROM python:3.11-slim AS builder
+FROM python:3.11 AS builder
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    gcc \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        cmake \
+        build-essential \
+        gcc \
+        g++ \
+        git && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get install libgomp1 -y
 
 COPY requirements.txt /app/
 

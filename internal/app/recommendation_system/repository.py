@@ -15,3 +15,6 @@ class RecommendationSystemRepository:
 
     def get_products_by_ids(self, ids: list[int]) -> list[Product]:
         return self.__product_repository.get_products_by_ids(ids)
+
+    def get_shop_products(self, shop_id: int) -> list[Product]:
+        return self.__product_repository.get_shop_products(shop_id)

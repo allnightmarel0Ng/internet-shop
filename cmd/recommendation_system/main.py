@@ -16,8 +16,11 @@ app = FastAPI()
 if __name__ == '__main__':
     config = load_config()
 
-    df = pd.read_csv('ml/recommendation_system/data/ratings.csv', sep=',')
-    ml = RecommendationSystem(df).load_data().train_model()
+    reviews = pd.read_csv('ml/recommendation_system/data/ratings.csv', sep=',')
+    recommendation_system = RecommendationSystem(reviews).load_data().train_model()
+
+    # sales = pd.read_csv('ml/optimal_price/data/sales.csv', sep=',')
+    # optimal_price = OptimalPrice(sales).preprocess().fit()
 
     db = Database(
         f"postgresql://{config.POSTGRES_USER}:{config.POSTGRES_PASSWORD}@postgres:{config.POSTGRES_PORT}/{config.POSTGRES_DB}")
@@ -26,7 +29,7 @@ if __name__ == '__main__':
     reviews = ReviewRepository(db)
 
     repo = RecommendationSystemRepository(products, reviews)
-    use_case = RecommendationSystemUseCase(repo=repo, ml=ml)
+    use_case = RecommendationSystemUseCase(repo=repo, recommendation_system=recommendation_system)
     handler = RecommendationSystemHandler(use_case)
 
     app.include_router(handler.router)

@@ -166,4 +166,11 @@ class GatewayUseCase:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail='cant recommend anything for shops')
 
-        return self.__fetch_get(f"http://recommendation_system:{self.__recommendation_system_port}/predict/{auth_data['id']}?count={count}")
+        return self.__fetch_get(f"http://recommendation_system:{self.__recommendation_system_port}/recommend/{auth_data['id']}?count={count}")
+
+    # def optimal_price(self, auth_header: str):
+    #     auth_data = self.__authorization(auth_header)
+    #     if auth_data['type'] != 'shop':
+    #         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='only shops can do that')
+    #
+    #     return self.__fetch_get(f"http://recommendation_system:{self.__recommendation_system_port}/optimal_price/{auth_data['id']}")

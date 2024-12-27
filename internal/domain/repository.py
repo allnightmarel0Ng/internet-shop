@@ -317,7 +317,7 @@ class PaycheckRepository:
         return list(paychecks_and_products.values())
 
     def check_if_bought(self, user_id: int, product_id: int) -> bool:
-        return len(self.__db.query_row(self.__SELECT_BOUGHT_PRODUCT_SQL, {'user_id': user_id, 'product_id': product_id})) > 0
+        return len(self.__db.query(self.__SELECT_BOUGHT_PRODUCT_SQL, {'user_id': user_id, 'product_id': product_id})) > 0
 
 
 class ShoppingCartRepository:
